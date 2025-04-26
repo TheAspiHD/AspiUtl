@@ -1,0 +1,233 @@
+@SimOffScreenDrawing
+--track0:Center,0,1,1,1
+--track1:rAspect,0,1,1,1
+--track2:Zoom%,0,1,0,1
+--track3:Rot-Z,0,1,0,1
+local do_resolve_cxcy = (math.floor(obj.track0) == 1)
+local do_aspect = (math.floor(obj.track1) == 1)
+local do_zoom = (math.floor(obj.track2) == 1)
+local do_rz = (math.floor(obj.track3) == 1)
+
+local rotate = function(pos, rx, ry, rz, cx, cy, cz)
+    local x, y, z = unpack(pos)
+    z = z or 0
+    local cx, cy, cz = cx or 0, cy or 0, cz or 0
+    local sinZ, cosZ, sinY, cosY, sinX, cosX = 0, 1, 0, 1, 0, 1
+    local coef = math.pi / 180
+
+    x, y, z = x - cx, y - cy, z - cz
+
+    if(rz and rz ~= 0)then
+        local rz = rz * coef
+        sinZ = math.sin(rz)
+        cosZ = math.cos(rz)
+        x, y = x * cosZ - y * sinZ, x * sinZ + y * cosZ
+    end
+
+    if(ry and ry ~= 0)then
+        local ry = ry * coef
+        sinY = math.sin(ry)
+        cosY = math.cos(ry)
+        z, x = z * cosY - x * sinY, z * sinY + x * cosY
+    end
+
+    if(rx and rx~=0)then
+        local rx = rx * coef
+        sinX = math.sin(rx)
+        cosX = math.cos(rx)
+        y, z = y * cosX - z * sinX, y * sinX + z * cosX
+    end
+
+    return { x + cx, y + cy, z + cz}
+end
+
+--XY aspect decompose
+local decompose = function(aspect)
+    if(aspect >= 0)then
+        return 1 - aspect, 1
+    else
+        return 1, 1 + aspect
+    end
+end
+
+--XY aspect synthesis
+local synthesize = function(zoom, zoom_x, zoom_y)
+    if(zoom == 0 or zoom_x == 0 or zoom_y == 0)then
+        return 0, 0
+    end
+
+    if(zoom_x < zoom_y)then
+        return zoom * math.max(zoom_x, zoom_y), 1 - zoom_x / zoom_y
+    else
+        return zoom * math.max(zoom_x, zoom_y), -(1 - zoom_y / zoom_x)
+    end
+end
+
+--aspect multiplication
+local multiply = function(zoom, aspect1, aspect2)
+    local zoom_x1, zoom_y1 = decompose(aspect1)
+    local zoom_x2, zoom_y2 = decompose(aspect2)
+    return synthesize(zoom, zoom_x1 * zoom_x2, zoom_y1 * zoom_y2)
+end
+
+
+--match center
+if(do_resolve_cxcy)then
+    local w, h = obj.getpixel()
+    local cx = w * 0.5 + obj.cx
+    local cy = h * 0.5 + obj.cy
+    local dx = -obj.cx
+    local dy = -obj.cy
+
+    local dx1, dx2 = -cx, w - cx
+    local dy1, dy2 = -cy, h - cy
+
+    local w = math.max(math.abs(dx1), math.abs(dx2)) * 2
+    local h = math.max(math.abs(dy1), math.abs(dy2)) * 2
+
+    obj.setoption("dst", "tmp", w, h)
+    obj.draw(dx, dy)
+    obj.copybuffer("obj", "tmp")
+    obj.cx, obj.cy = 0, 0
+end
+
+--Aspect
+local zoom_x, zoom_y = 1, 1
+if(do_aspect)then
+    local zoom = obj.getvalue("zoom") * 0.01 * obj.zoom
+    local zoom_x1, zoom_y1 = decompose(obj.getvalue("aspect"))
+    local zoom_x2, zoom_y2 = decompose(obj.aspect)
+    local zoom, aspect = synthesize(zoom, zoom_x1 * zoom_x2, zoom_y1 * zoom_y2)
+
+    zoom_x, zoom_y = decompose(aspect)
+
+    --Counter
+    obj.zoom = zoom * 100 / obj.getvalue("zoom")
+    zoom, obj.aspect = synthesize(1, 1 / zoom_x1, 1 / zoom_y1)
+    zoom_x = zoom_x * zoom
+    zoom_y = zoom_y * zoom
+
+    --Center
+    local w, h = obj.getpixel()
+    local cx0 = (w * 0.5 + obj.cx) / w
+    local cy0 = (h * 0.5 + obj.cy) / h
+
+    local w, h = w * zoom_x, h * zoom_y
+    obj.cx = -w * 0.5 + w * cx0
+    obj.cy = -h * 0.5 + h * cy0
+end
+
+
+--Magnification
+local zoom = 1
+if(do_zoom)then
+    zoom = obj.getvalue("zoom") * 0.01 * obj.zoom
+
+    --Counter
+    obj.zoom = 100 / obj.getvalue("zoom")
+
+    --Center
+    local w, h = obj.getpixel()
+    local cx0 = (w * 0.5 + obj.cx) / w
+    local cy0 = (h * 0.5 + obj.cy) / h
+
+    local w, h = w * zoom, h * zoom
+    obj.cx = -w * 0.5 + w * cx0
+    obj.cy = -h * 0.5 + h * cy0
+end
+
+
+--Z-rotation
+local rz = 0
+if(do_rz)then
+    rz = obj.rz
+    obj.rz = 0
+
+    --Center
+    obj.cx, obj.cy, obj.cz = unpack(rotate({obj.cx, obj.cy, obj.cz}, 0, 0, rz))
+end
+
+if(zoom_x == 1 and zoom_y == 1 and zoom == 1 and rz == 0)then
+    return
+end
+
+--Aspect,Magnification and Z-rotation
+local w, h = obj.getpixel()
+local l, t = w * -0.5 * zoom_x * zoom, h * -0.5 * zoom_y * zoom
+local r, b = -l, -t
+
+local x1, y1, z1 = unpack(rotate({l, t, 0}, 0, 0, rz))
+local x2, y2, z2 = unpack(rotate({r, t, 0}, 0, 0, rz))
+local x3, y3, z3 = unpack(rotate({r, b, 0}, 0, 0, rz))
+local x4, y4, z4 = unpack(rotate({l, b, 0}, 0, 0, rz))
+
+local w = math.abs(math.min(x1, x2, x3, x4)) + math.max(x1, x2, x3, x4)
+local h = math.abs(math.min(y1, y2, y3, y4)) + math.max(y1, y2, y3, y4)
+
+obj.setoption("dst", "tmp", w, h)
+obj.drawpoly(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4)
+obj.copybuffer("obj", "tmp")
+
+
+@SaveAsPNG
+--dialog:filename pattern,filename="temp/$layer_$index_$frame.png";
+--check0:Execute,0
+if(not obj.check0)then
+    return
+end
+
+local tbl = {
+    layer = string.format("%04d", obj.layer),
+    index = string.format("%04d", obj.index),
+    frame = string.format("%04d", obj.frame)
+}
+
+local filename = string.gsub(filename, "%$(%w+)", tbl)
+
+require("extbuffer")
+extbuffer.fwrite(filename, obj.getpixeldata())
+
+
+@LoadPNG
+--track0:Col,1,50,1,1
+--track1:Row,1,50,1,1
+--dialog:filename pattern,filename="temp/$layer_$index_$frame.png";frame offset,frame_offset=0;
+--check0:keep original position,0
+
+local properties = {ox = 0, oy = 0, oz = 0, cx = 0, cy = 0, cz = 0, rx = 0, ry = 0, rz = 0, zoom = 1, aspect = 0, alpha = 1}
+if(obj.check0)then
+    for k, v in pairs(properties) do
+        properties[k] = obj[k]
+    end
+end
+
+local tbl = {
+    layer = string.format("%04d", obj.layer),
+    index = string.format("%04d", obj.index),
+    frame = string.format("%04d", obj.frame + frame_offset)
+}
+
+local filename = string.gsub(filename, "%$(%w+)", tbl)
+obj.load("image", filename)
+
+local rows = math.floor(obj.track1)
+local cols = math.floor(obj.track0)
+
+local index = obj.index
+local row = math.floor(index / cols)
+local col = index % cols
+
+local c_col = (cols - 1) * 0.5
+local c_row = (rows - 1) * 0.5
+
+local w, h = obj.getpixel()
+obj.ox = (col - c_col) * w
+obj.oy = (row - c_row) * h
+
+if(obj.check0)then
+    for k, v in pairs(properties) do
+        obj[k] = properties[k]
+    end
+end
+
+

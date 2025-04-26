@@ -1,0 +1,365 @@
+--track0:PenSize,0,50,20
+--track1:Hair#,1,25,5,1
+--track2:Anchor#,1,16,3,1
+--track3:Progress,0,100,50
+--check0:Double Ends,0
+--dialog:pos,pos={-100,0,0,0,100,0};Shape/fig,f="Circle";PenColor/col,c=0x808080;BGColor/col,c2=0xffffff;Thickness,d=2;Domain,a={50,50};Stroke%,k=20;TipShape,fr=3;CenterPos,cp=2;Continuity,kp=5;Decay,b=1;OverlapStr,kk=30;NoBG/chk,ns=0;Compose on other layer/chk,ly=0;LinkHairCount,ln=0;RanSeed,ra=0
+require("extbuffer")
+local figu=f
+local col=c
+local col2=c2
+local den=d
+local area=a
+local kasu=1-k*0.01
+local front=fr
+local center=cp-1
+local ran=ra
+local keep=kp
+local kyoud=kk*0.01
+local bai=b
+local lenke=ln
+f=nil
+c=nil
+c2=nil
+d=nil
+a=nil
+k=nil
+fr=nil
+cp=nil
+r=nil
+kp=nil
+ln=nil
+local r=obj.track0
+local hasi=obj.track1
+local num=math.floor(obj.track2)
+local w,h=obj.getpixel()
+local prg=obj.track3
+local side=obj.check0
+local draw=obj.draw
+local load=obj.load
+local abs=math.abs
+local cos=math.cos
+local sin=math.sin
+local max=math.max
+local option=obj.setoption
+local polar=obj.interpolation
+local copy=obj.copybuffer
+local pi=math.pi
+local atan=math.atan
+load("figure",figu,col,2*r)
+obj.setanchor("pos",num)
+local pos1=pos
+pos=nil
+pos1[-1]=pos1[1]
+pos1[0]=pos1[2]
+pos1[num*2+1]=pos1[num*2-1]
+pos1[num*2+2]=pos1[num*2]
+local length={}
+length[0]=0
+for i=1,num-1 do
+local i2=i*2
+local v1=pos1[i2-1]
+local v2=pos1[i2+1]
+local u1=pos1[i2]
+local u2=pos1[i2+2]
+length[i]=math.floor((((v1-v2)*(v1-v2)+(u1-u2)*(u1-u2))^0.5)/den)
+end
+local total={}
+if side then
+total[1]=0
+total[2]=0
+for i=1,num-1 do
+if i<=center then
+total[1]=total[1]+length[i]
+else
+total[2]=total[2]+length[i]
+end
+end
+else
+total[1]=0
+for i=1,num-1 do
+total[1]=total[1]+length[i]
+end
+end
+local maxw=abs(pos1[1])
+local maxh=abs(pos1[2])
+for i=2,num do
+local i2=i*2
+maxw=max(maxw,abs(pos1[i2-1]))
+maxh=max(maxh,abs(pos1[i2]))
+end
+w=math.floor(maxw*2+w+area[1]+r*2)
+h=math.floor(maxh*2+h+area[2]+r*2)
+w=w+w%2
+h=h+h%2
+option("dst","tmp",w,h)
+local count=0
+if not side then
+for i=1,num-1 do
+local mm=0
+for j=1,i-1 do
+mm=mm+length[j]
+end
+for j=0,length[i]-1 do
+local nn=j+mm
+local nden=nn/total[1]
+if nden*100<=prg then
+local i2=i*2
+local x,y=polar(j/length[i],pos1[i2-3],pos1[i2-2],pos1[i2-1],pos1[i2],pos1[i2+1],pos1[i2+2],pos1[i2+3],pos1[i2+4])
+if kasu<nden then
+local vani=obj.rand(0,1,nn+5*i,ran)
+if vani==0 or (vani==1 and 0< count and count<=keep) then
+draw(x,y,0,(1-nden)^bai)
+if count<keep then
+count=count+1
+else
+count=0
+end
+end
+else
+draw(x,y,0,(1-nden)^bai)
+end
+end
+end
+end
+else
+for i=1,num-1 do
+if i<=center then
+local mm=0
+for j=1,i-1 do
+mm=mm+length[j]
+end
+for j=0,length[i]-1 do
+local nn=j+mm
+local nden1=nn/(total[1]+total[2])
+local nden2=nn/total[1]
+if nden1*100<=prg then
+local i2=i*2
+local x,y=polar(j/length[i],pos1[i2-3],pos1[i2-2],pos1[i2-1],pos1[i2],pos1[i2+1],pos1[i2+2],pos1[i2+3],pos1[i2+4])
+if nden2<1-kasu then
+local vani=obj.rand(0,1,nn+5*i,ran)
+if vani==0 or (vani==1 and 0< count and count<=keep) then
+draw(x,y,0,nden2^bai)
+if count<keep then
+count=count+1
+else
+count=0
+end
+end
+else
+draw(x,y,0,nden2^bai)
+end
+end
+end
+else
+local mm=0
+for j=1,i-1 do
+mm=mm+length[j]
+end
+for j=0,length[i]-1 do
+local nn=j+mm
+local nden1=nn/(total[1]+total[2])
+local nden2=(nn-total[1])/total[2]
+if nden1*100<=prg then
+local i2=i*2
+local x,y=polar(j/length[i],pos1[i2-3],pos1[i2-2],pos1[i2-1],pos1[i2],pos1[i2+1],pos1[i2+2],pos1[i2+3],pos1[i2+4])
+if kasu<nden2 then
+local vani=obj.rand(0,1,nn+5*i,ran)
+if vani==0 or (vani==1 and 0< count and count<=keep) then
+draw(x,y,0,(1-nden2)^bai)
+if count<keep then
+count=count+1
+else
+count=0
+end
+end
+else
+draw(x,y,0,(1-nden2)^bai)
+end
+end
+end
+end
+end
+end
+copy("obj","tmp")
+extbuffer.write(1+lenke)
+if not side then
+for k=2,hasi do
+load("figure",figu,col,2*r)
+option("dst","tmp",w,h)
+local x0,y0
+local rh=obj.rand(-r,r,11*k,ran)
+local count=0
+local zura=abs(rh)*front
+if total[1]<=zura then
+zura=total[1]-1
+end
+for i=1,num-1 do
+local i2=i*2
+local mm=0
+for j=1,i-1 do
+mm=mm+length[j]
+end
+for j=0,length[i]-1 do
+local nn=j+mm
+local nden=nn/(total[1]-zura)
+if nn/(total[1])*100<=prg and nn<total[1]-zura then
+if nn==0 then
+local x,y=polar(j/length[i],pos1[i2-3],pos1[i2-2],pos1[i2-1],pos1[i2],pos1[i2+1],pos1[i2+2],pos1[i2+3],pos1[i2+4])
+x0=x
+y0=y
+else
+local x,y=polar(j/length[i],pos1[i2-3],pos1[i2-2],pos1[i2-1],pos1[i2],pos1[i2+1],pos1[i2+2],pos1[i2+3],pos1[i2+4])
+local deg=atan((y-y0)/(x-x0))
+if x0<=x then
+deg=deg+pi
+end
+local x1=rh*cos(deg+pi*0.5)
+local y1=rh*sin(deg+pi*0.5)
+if kasu<nden then
+local vani=obj.rand(0,1,nn+3*i+7*k,ran)
+if vani==0 or (vani==1 and 0< count and count<=keep) then
+draw(x1+x,y1+y,0,(1-abs(rh)/r)*(1-nden)^bai)
+if count<keep then
+count=count+1
+else
+count=0
+end
+end
+x0=x
+y0=y
+else
+draw(x1+x,y1+y,0,(1-abs(rh)/r)*(1-nden)^bai)
+x0=x
+y0=y
+end
+end
+end
+end
+end
+copy("obj","tmp")
+extbuffer.write(k+lenke)
+end
+else
+for k=2,hasi do
+load("figure",figu,col,2*r)
+option("dst","tmp",w,h)
+local x0,y0
+local rh=obj.rand(-r,r,11*k,ran)
+local count=0
+for i=1,num-1 do
+if i<=center then
+local i2=i*2
+local mm=0
+for j=1,i-1 do
+mm=mm+length[j]
+end
+local zura=abs(rh)*front
+if total[1]<=zura then
+zura=total[1]-1
+end
+for j=0,length[i]-1 do
+local nn=j+mm
+local nden1=nn/(total[1]+total[2])
+local nden2=(nn-zura)/(total[1]-zura)
+if nden1*100<=prg and zura<nn then
+if y0==nil then
+x0,y0=polar((j-1)/length[i],pos1[i2-3],pos1[i2-2],pos1[i2-1],pos1[i2],pos1[i2+1],pos1[i2+2],pos1[i2+3],pos1[i2+4])
+end
+local x,y=polar(j/length[i],pos1[i2-3],pos1[i2-2],pos1[i2-1],pos1[i2],pos1[i2+1],pos1[i2+2],pos1[i2+3],pos1[i2+4])
+local deg=atan((y-y0)/(x-x0))
+if x0<=x then
+deg=deg+pi
+end
+local x1=rh*cos(deg+pi*0.5)
+local y1=rh*sin(deg+pi*0.5)
+if nden2<1-kasu then
+local vani=obj.rand(0,1,nn+3*i+7*k,ran)
+if vani==0 or (vani==1 and 0< count and count<=keep) then
+draw(x1+x,y1+y,0,(1-abs(rh)/r)*nden2^bai)
+if count<keep then
+count=count+1
+else
+count=0
+end
+end
+x0=x
+y0=y
+else
+draw(x1+x,y1+y,0,(1-abs(rh)/r)*nden2^bai)
+x0=x
+y0=y
+end
+end
+end
+else
+local i2=i*2
+local mm=0
+for j=1,i-1 do
+mm=mm+length[j]
+end
+local zura=abs(rh)*front
+if total[2]<=zura then
+zura=total[2]-1
+end
+for j=0,length[i]-1 do
+local nn=j+mm
+local nden1=nn/(total[1]+total[2])
+local nden2=(nn-total[1])/(total[2]-zura)
+if nden1*100<=prg and nn-total[1]<total[2]-zura then
+if y0==nil then
+x0,y0=polar(j-1/length[i],pos1[i2-3],pos1[i2-2],pos1[i2-1],pos1[i2],pos1[i2+1],pos1[i2+2],pos1[i2+3],pos1[i2+4])
+end
+local x,y=polar(j/length[i],pos1[i2-3],pos1[i2-2],pos1[i2-1],pos1[i2],pos1[i2+1],pos1[i2+2],pos1[i2+3],pos1[i2+4])
+local deg=atan((y-y0)/(x-x0))
+if x0<=x then
+deg=deg+pi
+end
+local x1=rh*cos(deg+pi*0.5)
+local y1=rh*sin(deg+pi*0.5)
+if kasu<nden2 then
+local vani=obj.rand(0,1,nn+3*i+7*k,ran)
+if vani==0 or (vani==1 and 0< count and count<=keep) then
+draw(x1+x,y1+y,0,(1-abs(rh)/r)*(1-nden2)^bai)
+if count<keep then
+count=count+1
+else
+count=0
+end
+end
+x0=x
+y0=y
+else
+draw(x1+x,y1+y,0,(1-abs(rh)/r)*(1-nden2)^bai)
+x0=x
+y0=y
+end
+end
+end
+end
+end
+copy("obj","tmp")
+extbuffer.write(k+lenke)
+end
+end
+if ly==0 then
+option("dst","tmp",w,h)
+if ns==0 then
+for i=1,hasi+lenke do
+extbuffer.read(i)
+obj.effect("Monochromatic","color",col2,"Keep luminance",0)
+draw()
+end
+end
+for i=1,hasi+lenke do
+extbuffer.read(i)
+draw(0,0,0,1,kyoud)
+extbuffer.clear(i)
+end
+copy("obj","tmp")
+extbuffer.write(1)
+extbuffer.read(1)
+extbuffer.clear(1)
+else
+obj.alpha=0
+end

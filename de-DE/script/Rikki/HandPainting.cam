@@ -1,0 +1,80 @@
+--track0:Progress,0,100,0,0.01
+--track1:Layer#,0,100,0,1
+--track2:Reverse,0,1,0,1
+--track3:Gura,1,500,2,1
+--check0:AutoTilt,0
+--dialog:filename,local file="oekaki001";Method3/chk,local ap=0;Method3Intvl,local ap3=0
+local tmpoe=OEKAKI
+local g=math.floor(obj.track3)
+local path=obj.getinfo("script_path")..file..".txt"
+if ap3==nil then
+ap3=0
+end
+local camoe
+if io.open(path,"r") then
+dofile(path)
+camoe=OEKAKI
+else
+obj.setfont("",50,4)
+load("No ref. File")
+draw()
+end
+if camoe then
+local n
+if obj.track2==0 then
+if ap==0 then
+n=math.floor(#camoe*obj.track0*0.01)
+else
+n=math.floor((#camoe+ap3)*obj.track0*0.01)
+end
+else
+if ap==0 then
+n=math.floor(#camoe*(1-obj.track0*0.01))
+else
+n=math.floor(#camoe*(1-obj.track0*0.01)-ap3*obj.track0*0.01)
+end
+end
+if n<=0 then
+n=1
+end
+if #camoe<n then
+n=#camoe
+end
+local lx,ly
+if obj.track1==0 then
+lx=0
+ly=0
+else
+local layer=tostring("layer"..obj.track1)
+lx=obj.getvalue(layer..".x")
+ly=obj.getvalue(layer..".y")
+end
+if lx==nil then
+lx=0
+ly=0
+end
+cam = obj.getoption("camera_param")
+local x=camoe[n][4]
+local y=camoe[n][5]
+cam.tx=x-x%g+cam.tx+lx
+cam.ty=y-y%g+cam.ty+ly
+cam.x=x-x%g+cam.x+lx
+cam.y=y-y%g+cam.y+ly
+if obj.check0 then
+if n==1 then
+n=2
+end
+deg=math.atan((camoe[n][5]-camoe[n-1][5])/(camoe[n][4]-camoe[n-1][4]))
+if camoe[n-1][4]<=camoe[n][4] then
+deg=deg+math.pi
+end
+if obj.track2==0 then
+cam.rz=cam.rz+90-deg*180/math.pi+180
+else
+cam.rz=cam.rz+90-deg*180/math.pi
+end
+end
+obj.setoption("camera_param",cam)
+end
+
+OEKAKI=tmpoe

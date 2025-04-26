@@ -1,0 +1,806 @@
+--Trump Effect originally by Rikki:
+--http://rikkyscript.web.fc2.com/download.html
+
+@Trump
+--track0:Size,10,500,200,1
+--track1:Bluntness,0,200,20,1
+--track2:Number,1,13,1,1
+--track3:Mark,1,5,1,1
+--dialog:AspectRatio,local hi=1.41;CornerMarkPos,local form=20;CornerMarkSize,local size=20;FineAdj_shdc,local z={0,0,0,0};Text,local moji={};Font,font="MS UI Gothic";PatternFolder,local fname="";FrontSideOnly/chk,local fil=0;BackSideBorderColor/col,local ucolor=0xffffff;BorderMargin,local waku=0;BluntInnerSquare/chk,local uma=0;*Scatter/chk,local p=0;*Area,local area=1000;*Count,local joker=10;*Spd_AngSpd,vdv={100,100};*Gravity,local g=30
+
+local path=obj.getinfo("script_path")..fname
+local uflag=false
+local soflag=false
+local hoflag=false
+local doflag=false
+local coflag=false
+local sflag=false
+local hflag=false
+local dflag=false
+local cflag=false
+local sjflag=false
+local hjflag=false
+local djflag=false
+local cjflag=false
+local sqflag=false
+local hqflag=false
+local dqflag=false
+local cqflag=false
+local skflag=false
+local hkflag=false
+local dkflag=false
+local ckflag=false
+local jokerflag=false
+if fname~="" then
+local eopen=function(name,gara)
+local exten={".PNG",".jpg",".JPG",".Png",".pNg",".pnG",".PNg",".PnG",".pNG",".Jpg",".jPg",".jpG",".JPg",".JpG",".jPG"}
+local flag=name.."\\"..gara..".png"
+for i=1,16 do
+local t=io.open(flag,"r")
+if t==nil then
+if i~=16 then
+flag=name.."\\"..gara..exten[i]
+else
+flag=false
+end
+else
+t:close()
+break
+end
+end
+return flag
+end
+uflag=eopen(path,"u")
+soflag=eopen(path,"so")
+hoflag=eopen(path,"ho")
+doflag=eopen(path,"do")
+coflag=eopen(path,"co")
+sflag=eopen(path,"s")
+hflag=eopen(path,"h")
+dflag=eopen(path,"d")
+cflag=eopen(path,"c")
+sjflag=eopen(path,"sj")
+hjflag=eopen(path,"hj")
+djflag=eopen(path,"dj")
+cjflag=eopen(path,"cj")
+sqflag=eopen(path,"sq")
+hqflag=eopen(path,"hq")
+dqflag=eopen(path,"dq")
+cqflag=eopen(path,"cq")
+skflag=eopen(path,"sk")
+hkflag=eopen(path,"hk")
+dkflag=eopen(path,"dk")
+ckflag=eopen(path,"ck")
+jokerflag=eopen(path,"joker")
+end
+if hi==nil then
+hi=1.14
+end
+if form==nil then
+form=20
+end
+if z==nil then
+z={}
+end
+for i=1,4 do
+if z[i]==nil then
+z[i]=0
+end
+end
+if size==nil then
+size=20
+end
+if area==nil then
+area=4000
+end
+if joker==nil then
+joker=1
+end
+if vdv==nil then
+vdv={}
+end
+if vdv[1]==nil then
+vdv[1]=100
+end
+if vdv[2]==nil then
+vdv[2]=100
+end
+if moji==nil then
+moji={}
+end
+if g==nil then
+g=0
+end
+if waku==nil then
+waku=0
+end
+if ucolor==nil then
+ucolor=0xffffff
+end
+local w=obj.track0
+local h=w*hi
+local r=obj.track1
+local w2=w*0.5
+local h2=h*0.5
+local min=math.min(w2,h2)
+if min<r then
+r=min
+end
+if min<waku then
+waku=min
+end
+local n=math.floor(obj.track2)
+local m=math.floor(obj.track3)
+local r3=3^0.5
+local gara={"&#9824;","&#9829;","&#9830;","&#9827;"}
+if sflag then
+gara[1]=sflag
+end
+if hflag then
+gara[2]=hflag
+end
+if dflag then
+gara[3]=dflag
+end
+if cflag then
+gara[4]=cflag
+end
+local number={"1","2","3","4","5","6","7","8","9","10","J","Q","K"}
+if #moji==13 then
+number={moji[1],moji[2],moji[3],moji[4],moji[5],moji[6],moji[7],moji[8],moji[9],moji[10],moji[11],moji[12],moji[13]}
+end
+local omote={soflag,hoflag,doflag,coflag}
+local jack={sjflag,hjflag,djflag,cjflag}
+local qween={sqflag,hqflag,dqflag,cqflag}
+local king={skflag,hkflag,dkflag,ckflag}
+local color={0,0xff0000,0xff0000,0}
+if p==0 then
+joker=1
+end
+local px=0
+local py=0
+local pz=0
+local rx=0
+local ry=0
+local rz=0
+local tn=math.ceil((math.ceil(vdv[1]*obj.totaltime/area)+2)*joker/53)
+local allnumber={}
+if p==1 then
+for i=1,tn do
+local tmpnum={}
+for j=1,53 do
+tmpnum[j]=j
+end
+for j=1,53 do
+local swf=obj.rand(1,53,i,j)
+local swp=tmpnum[swf]
+tmpnum[swf]=tmpnum[j]
+tmpnum[j]=swp
+end
+for j=1,53 do
+allnumber[j+(i-1)*53]=tmpnum[j]
+end
+end
+end
+abc=allnumber
+--Shape
+obj.setoption("dst","tmp",w,h)
+obj.load("figure","Square",0xffffff)
+obj.drawpoly(-w2,-h2+r,0,w2,-h2+r,0,w2,h2-r,0,-w2,h2-r,0)
+obj.drawpoly(-w2+r,-h2,0,w2-r,-h2,0,w2-r,h2,0,-w2+r,h2,0)
+obj.load("figure","Circle",0xffffff,r*2*10)
+obj.draw(-w2+r,-h2+r,0,0.1)
+obj.draw(w2-r,-h2+r,0,0.1)
+obj.draw(w2-r,h2-r,0,0.1)
+obj.draw(-w2+r,h2-r,0,0.1)
+obj.copybuffer("cache:toram","tmp")
+
+if uma==1 and uflag then
+local tw=(w2-waku)
+local th=(h2-waku)
+obj.setoption("dst","tmp",2*tw,2*th)
+obj.load("figure","Square",0xffffff)
+obj.drawpoly(-tw,-th+r,0,tw,-th+r,0,tw,th-r,0,-tw,th-r,0)
+obj.drawpoly(-tw+r,-th,0,tw-r,-th,0,tw-r,th,0,-tw+r,th,0)
+obj.load("figure","Circle",0xffffff,r*2*10)
+obj.draw(-tw+r,-th+r,0,0.1)
+obj.draw(tw-r,-th+r,0,0.1)
+obj.draw(tw-r,th-r,0,0.1)
+obj.draw(-tw+r,th-r,0,0.1)
+obj.copybuffer("cache:uratmp","tmp")
+obj.load(uflag)
+obj.setoption("dst","tmp",2*tw,2*th)
+obj.drawpoly(-tw,-th,0,tw,-th,0,tw,th,0,-tw,th,0)
+obj.setoption("blend","alpha_sub")
+obj.copybuffer("obj","cache:uratmp")
+obj.effect("Reversal","Transparency inversion",1)
+obj.draw()
+obj.copybuffer("cache:uratmp","tmp")
+obj.setoption("blend","force")
+end
+
+for j=1,joker do
+if p==1 then
+local ot=obj.time
+px=area*obj.rand(0,1000,j,0)*0.001
+local abv=math.abs(vdv[1])
+local def=px
+if(vdv[1]<0)then
+def=area-def
+end
+local pro=def+abv*ot
+local turn=math.floor(pro/area)
+local t0=(turn*area-def)/abv
+if t0<0 then
+t0=0
+end
+local mk=allnumber[j+turn*joker]
+m=math.ceil(mk/13)
+n=(mk-1)%13+1
+if(vdv[1]<0)then
+px=px+vdv[1]*ot+area*(turn-0.5)
+else
+px=px+vdv[1]*ot-area*(turn+0.5)
+end
+py=area*obj.rand(-1000,1000,j*11+4,turn)*0.0005+g*(ot-t0)*(ot-t0)
+pz=area*obj.rand(-1000,0,j*3+1,turn)*0.0005
+rx=obj.rand(0,359,j,turn)+vdv[2]*ot
+ry=obj.rand(0,359,(j+2)*7,turn)+vdv[2]*ot*0.5
+rz=obj.rand(0,359,(j+3)*3,turn)+vdv[2]*ot*0.1
+end
+
+--Front
+obj.setoption("dst","tmp",w,h)
+obj.load("figure","Square",0xffffff)
+obj.drawpoly(-w2,-h2,0,w2,-h2,0,w2,h2,0,-w2,h2,0)
+if (m==1 and soflag) or (m==2 and hoflag) or (m==3 and doflag) or (m==4 and coflag) then
+obj.load(omote[m])
+obj.drawpoly(-w2,-h2,0,w2,-h2,0,w2,h2,0,-w2,h2,0)
+end
+if m~=5 then
+obj.setfont("MS UI Gothic",50,0,color[m])
+obj.load(gara[m])
+if n==1 then
+if (m==1 and sflag) or (m==2 and hflag) or (m==3 and dflag) or (m==4 and cflag) then
+if m==1 then
+obj.drawpoly(-75+z[m],-75,0,75+z[m],-75,0,75+z[m],75,0,-75+z[m],75,0)
+else
+obj.drawpoly(-25+z[m],-25,0,25+z[m],-25,0,25+z[m],25,0,-25+z[m],25,0)
+end
+else
+if m==1 then
+obj.setfont("MS UI Gothic",150,0,color[m])
+obj.load(gara[m])
+end
+obj.draw(z[m])
+end
+elseif n==2 then
+if (m==1 and sflag) or (m==2 and hflag) or (m==3 and dflag) or (m==4 and cflag) then
+obj.drawpoly(-25+z[m],-100,0,25+z[m],-100,0,25+z[m],-50,0,-25+z[m],-50,0)
+obj.drawpoly(25-z[m],100,0,-25-z[m],100,0,-25-z[m],50,0,25-z[m],50,0)
+else
+obj.draw(z[m],-75)
+obj.draw(-z[m],75,0,1,1,180)
+end
+elseif n==3 then
+if (m==1 and sflag) or (m==2 and hflag) or (m==3 and dflag) or (m==4 and cflag) then
+obj.drawpoly(-25+z[m],-100,0,25+z[m],-100,0,25+z[m],-50,0,-25+z[m],-50,0)
+obj.drawpoly(-25+z[m],-25,0,25+z[m],-25,0,25+z[m],25,0,-25+z[m],25,0)
+obj.drawpoly(25-z[m],100,0,-25-z[m],100,0,-25-z[m],50,0,25-z[m],50,0)
+else
+obj.draw(z[m])
+obj.draw(z[m],-75)
+obj.draw(-z[m],75,0,1,1,180)
+end
+elseif n==4 then
+if (m==1 and sflag) or (m==2 and hflag) or (m==3 and dflag) or (m==4 and cflag) then
+obj.drawpoly(-75+z[m],-100,0,-25+z[m],-100,0,-25+z[m],-50,0,-75+z[m],-50,0)
+obj.drawpoly(25+z[m],-100,0,75+z[m],-100,0,75+z[m],-50,0,25+z[m],-50,0)
+obj.drawpoly(-25-z[m],100,0,-75-z[m],100,0,-75-z[m],50,0,-25-z[m],50,0)
+obj.drawpoly(75-z[m],100,0,25-z[m],100,0,25-z[m],50,0,75-z[m],50,0)
+else
+obj.draw(50*0.5*r3+z[m],-75)
+obj.draw(-50*0.5*r3+z[m],-75)
+obj.draw(50*0.5*r3-z[m],75,0,1,1,180)
+obj.draw(-50*0.5*r3-z[m],75,0,1,1,180)
+end
+elseif n==5 then
+if (m==1 and sflag) or (m==2 and hflag) or (m==3 and dflag) or (m==4 and cflag) then
+obj.drawpoly(-75+z[m],-100,0,-25+z[m],-100,0,-25+z[m],-50,0,-75+z[m],-50,0)
+obj.drawpoly(25+z[m],-100,0,75+z[m],-100,0,75+z[m],-50,0,25+z[m],-50,0)
+obj.drawpoly(-25+z[m],-25,0,25+z[m],-25,0,25+z[m],25,0,-25+z[m],25,0)
+obj.drawpoly(-25-z[m],100,0,-75-z[m],100,0,-75-z[m],50,0,-25-z[m],50,0)
+obj.drawpoly(75-z[m],100,0,25-z[m],100,0,25-z[m],50,0,75-z[m],50,0)
+else
+obj.draw(z[m])
+obj.draw(50*0.5*r3+z[m],-75)
+obj.draw(-50*0.5*r3+z[m],-75)
+obj.draw(50*0.5*r3-z[m],75,0,1,1,180)
+obj.draw(-50*0.5*r3-z[m],75,0,1,1,180)
+end
+elseif n==6 then
+if (m==1 and sflag) or (m==2 and hflag) or (m==3 and dflag) or (m==4 and cflag) then
+obj.drawpoly(-75+z[m],-100,0,-25+z[m],-100,0,-25+z[m],-50,0,-75+z[m],-50,0)
+obj.drawpoly(25+z[m],-100,0,75+z[m],-100,0,75+z[m],-50,0,25+z[m],-50,0)
+obj.drawpoly(-75+z[m],-25,0,-25+z[m],-25,0,-25+z[m],25,0,-75+z[m],25,0)
+obj.drawpoly(25+z[m],-25,0,75+z[m],-25,0,75+z[m],25,0,25+z[m],25,0)
+obj.drawpoly(-25-z[m],100,0,-75-z[m],100,0,-75-z[m],50,0,-25-z[m],50,0)
+obj.drawpoly(75-z[m],100,0,25-z[m],100,0,25-z[m],50,0,75-z[m],50,0)
+else
+obj.draw(50*0.5*r3+z[m])
+obj.draw(-50*0.5*r3+z[m])
+obj.draw(50*0.5*r3+z[m],-75)
+obj.draw(-50*0.5*r3+z[m],-75)
+obj.draw(50*0.5*r3-z[m],75,0,1,1,180)
+obj.draw(-50*0.5*r3-z[m],75,0,1,1,180)
+end
+elseif n==7 then
+if (m==1 and sflag) or (m==2 and hflag) or (m==3 and dflag) or (m==4 and cflag) then
+obj.drawpoly(-75+z[m],-100,0,-25+z[m],-100,0,-25+z[m],-50,0,-75+z[m],-50,0)
+obj.drawpoly(25+z[m],-100,0,75+z[m],-100,0,75+z[m],-50,0,25+z[m],-50,0)
+obj.drawpoly(-25+z[m],-62.5,0,25+z[m],-62.5,0,25+z[m],-12.5,0,-25+z[m],-12.5,0)
+obj.drawpoly(-75+z[m],-25,0,-25+z[m],-25,0,-25+z[m],25,0,-75+z[m],25,0)
+obj.drawpoly(25+z[m],-25,0,75+z[m],-25,0,75+z[m],25,0,25+z[m],25,0)
+obj.drawpoly(-25-z[m],100,0,-75-z[m],100,0,-75-z[m],50,0,-25-z[m],50,0)
+obj.drawpoly(75-z[m],100,0,25-z[m],100,0,25-z[m],50,0,75-z[m],50,0)
+else
+obj.draw(z[m],-37.5)
+obj.draw(50*0.5*r3+z[m])
+obj.draw(-50*0.5*r3+z[m])
+obj.draw(50*0.5*r3+z[m],-75)
+obj.draw(-50*0.5*r3+z[m],-75)
+obj.draw(50*0.5*r3-z[m],75,0,1,1,180)
+obj.draw(-50*0.5*r3-z[m],75,0,1,1,180)
+end
+elseif n==8 then
+if (m==1 and sflag) or (m==2 and hflag) or (m==3 and dflag) or (m==4 and cflag) then
+obj.drawpoly(-75+z[m],-100,0,-25+z[m],-100,0,-25+z[m],-50,0,-75+z[m],-50,0)
+obj.drawpoly(25+z[m],-100,0,75+z[m],-100,0,75+z[m],-50,0,25+z[m],-50,0)
+obj.drawpoly(-75+z[m],-50,0,-25+z[m],-50,0,-25+z[m],0,0,-75+z[m],0,0)
+obj.drawpoly(25+z[m],-50,0,75+z[m],-50,0,75+z[m],0,0,25+z[m],0,0)
+obj.drawpoly(-25-z[m],50,0,-75-z[m],50,0,-75-z[m],0,0,-25-z[m],0,0)
+obj.drawpoly(75-z[m],50,0,25-z[m],50,0,25-z[m],0,0,75-z[m],0,0)
+obj.drawpoly(-25-z[m],100,0,-75-z[m],100,0,-75-z[m],50,0,-25-z[m],50,0)
+obj.drawpoly(75-z[m],100,0,25-z[m],100,0,25-z[m],50,0,75-z[m],50,0)
+else
+obj.draw(50*0.5*r3+z[m],-25)
+obj.draw(-50*0.5*r3+z[m],-25)
+obj.draw(50*0.5*r3+z[m],-75)
+obj.draw(-50*0.5*r3+z[m],-75)
+obj.draw(50*0.5*r3-z[m],25,0,1,1,180)
+obj.draw(-50*0.5*r3-z[m],25,0,1,1,180)
+obj.draw(50*0.5*r3-z[m],75,0,1,1,180)
+obj.draw(-50*0.5*r3-z[m],75,0,1,1,180)
+end
+elseif n==9 then
+if (m==1 and sflag) or (m==2 and hflag) or (m==3 and dflag) or (m==4 and cflag) then
+obj.drawpoly(-75+z[m],-100,0,-25+z[m],-100,0,-25+z[m],-50,0,-75+z[m],-50,0)
+obj.drawpoly(25+z[m],-100,0,75+z[m],-100,0,75+z[m],-50,0,25+z[m],-50,0)
+obj.drawpoly(-75+z[m],-50,0,-25+z[m],-50,0,-25+z[m],0,0,-75+z[m],0,0)
+obj.drawpoly(25+z[m],-50,0,75+z[m],-50,0,75+z[m],0,0,25+z[m],0,0)
+obj.drawpoly(-25+z[m],-25,0,25+z[m],-25,0,25+z[m],25,0,-25+z[m],25,0)
+obj.drawpoly(-25-z[m],50,0,-75-z[m],50,0,-75-z[m],0,0,-25-z[m],0,0)
+obj.drawpoly(75-z[m],50,0,25-z[m],50,0,25-z[m],0,0,75-z[m],0,0)
+obj.drawpoly(-25-z[m],100,0,-75-z[m],100,0,-75-z[m],50,0,-25-z[m],50,0)
+obj.drawpoly(75-z[m],100,0,25-z[m],100,0,25-z[m],50,0,75-z[m],50,0)
+else
+obj.draw(z[m])
+obj.draw(50*0.5*r3+z[m],-25)
+obj.draw(-50*0.5*r3+z[m],-25)
+obj.draw(50*0.5*r3+z[m],-75)
+obj.draw(-50*0.5*r3+z[m],-75)
+obj.draw(50*0.5*r3-z[m],25,0,1,1,180)
+obj.draw(-50*0.5*r3-z[m],25,0,1,1,180)
+obj.draw(50*0.5*r3-z[m],75,0,1,1,180)
+obj.draw(-50*0.5*r3-z[m],75,0,1,1,180)
+end
+elseif n==10 then
+if (m==1 and sflag) or (m==2 and hflag) or (m==3 and dflag) or (m==4 and cflag) then
+obj.drawpoly(-75+z[m],-100,0,-25+z[m],-100,0,-25+z[m],-50,0,-75+z[m],-50,0)
+obj.drawpoly(25+z[m],-100,0,75+z[m],-100,0,75+z[m],-50,0,25+z[m],-50,0)
+obj.drawpoly(-75+z[m],-50,0,-25+z[m],-50,0,-25+z[m],0,0,-75+z[m],0,0)
+obj.drawpoly(25+z[m],-50,0,75+z[m],-50,0,75+z[m],0,0,25+z[m],0,0)
+obj.drawpoly(-25+z[m],-75,0,25+z[m],-75,0,25+z[m],-25,0,-25+z[m],-25,0)
+obj.drawpoly(25-z[m],75,0,-25-z[m],75,0,-25-z[m],25,0,25-z[m],25,0)
+obj.drawpoly(-25-z[m],50,0,-75-z[m],50,0,-75-z[m],0,0,-25-z[m],0,0)
+obj.drawpoly(75-z[m],50,0,25-z[m],50,0,25-z[m],0,0,75-z[m],0,0)
+obj.drawpoly(-25-z[m],100,0,-75-z[m],100,0,-75-z[m],50,0,-25-z[m],50,0)
+obj.drawpoly(75-z[m],100,0,25-z[m],100,0,25-z[m],50,0,75-z[m],50,0)
+else
+obj.draw(z[m],-50)
+obj.draw(50*0.5*r3+z[m],-25)
+obj.draw(-50*0.5*r3+z[m],-25)
+obj.draw(50*0.5*r3+z[m],-75)
+obj.draw(-50*0.5*r3+z[m],-75)
+obj.draw(-z[m],50,0,1,1,0,0,180)
+obj.draw(50*0.5*r3-z[m],25,0,1,1,180)
+obj.draw(-50*0.5*r3-z[m],25,0,1,1,180)
+obj.draw(50*0.5*r3-z[m],75,0,1,1,180)
+obj.draw(-50*0.5*r3-z[m],75,0,1,1,180)
+end
+elseif n==11 then
+if (m==1 and sjflag) or (m==2 and hjflag) or (m==3 and djflag) or (m==4 and cjflag) then
+obj.load(jack[m])
+local jw,jh=obj.getpixel()
+local hx=w*jh/jw
+if hx<=h then
+obj.drawpoly(-w2,-hx*0.5,0,w2,-hx*0.5,0,w2,hx*0.5,0,-w2,hx*0.5,0)
+else
+local wx=h*jw/jh
+obj.drawpoly(-wx*0.5,-h2,0,wx*0.5,-h2,0,wx*0.5,h2,0,-wx*0.5,h2,0)
+end
+else
+obj.setfont(font,180,0,color[m])
+obj.load("J")
+obj.draw()
+end
+elseif n==12 then
+if (m==1 and sqflag) or (m==2 and hqflag) or (m==3 and dqflag) or (m==4 and cqflag) then
+obj.load(qween[m])
+local qw,qh=obj.getpixel()
+local hx=w*qh/qw
+if hx<=h then
+obj.drawpoly(-w2,-hx*0.5,0,w2,-hx*0.5,0,w2,hx*0.5,0,-w2,hx*0.5,0)
+else
+local wx=h*qw/qh
+obj.drawpoly(-wx*0.5,-h2,0,wx*0.5,-h2,0,wx*0.5,h2,0,-wx*0.5,h2,0)
+end
+else
+obj.setfont(font,180,0,color[m])
+obj.load("Q")
+obj.draw()
+end
+elseif n==13 then
+if (m==1 and skflag) or (m==2 and hkflag) or (m==3 and dkflag) or (m==4 and ckflag) then
+obj.load(king[m])
+local kw,kh=obj.getpixel()
+local hx=w*kh/kw
+if hx<=h then
+obj.drawpoly(-w2,-hx*0.5,0,w2,-hx*0.5,0,w2,hx*0.5,0,-w2,hx*0.5,0)
+else
+local wx=h*kw/kh
+obj.drawpoly(-wx*0.5,-h2,0,wx*0.5,-h2,0,wx*0.5,h2,0,-wx*0.5,h2,0)
+end
+else
+obj.setfont(font,180,0,color[m])
+obj.load("K")
+obj.draw()
+end
+end
+if (m==1 and sflag) or (m==2 and hflag) or (m==3 and dflag) or (m==4 and cflag) then
+obj.load(gara[m])
+obj.drawpoly(-w2+form-size*0.5,-h2+form+size*0.5,0,-w2+form+size*0.5,-h2+form+size*0.5,0,-w2+form+size*0.5,-h2+form+size*1.5,0,-w2+form-size*0.5,-h2+form+size*1.5,0)
+obj.drawpoly(w2-form+size*0.5,h2-form-size*0.5,0,w2-form-size*0.5,h2-form-size*0.5,0,w2-form-size*0.5,h2-form-size*1.5,0,w2-form+size*0.5,h2-form-size*1.5,0)
+else
+obj.setfont("MS UI Gothic",size,0,color[m])
+obj.load(gara[m])
+obj.draw(-w2+form,-h2+form+size)
+obj.draw(w2-form,h2-form-size,0,1,1,0,0,180)
+end
+obj.setfont(font,size,0,color[m])
+obj.load(number[n])
+obj.draw(-w2+form,-h2+form)
+obj.draw(w2-form,h2-form,0,1,1,0,0,180)
+else
+if (m==5 and jokerflag) then
+obj.load(jokerflag)
+local jow,joh=obj.getpixel()
+local hx=w*joh/jow
+if hx<=h then
+obj.drawpoly(-w2,-hx*0.5,0,w2,-hx*0.5,0,w2,hx*0.5,0,-w2,hx*0.5,0)
+else
+local wx=h*jow/joh
+obj.drawpoly(-wx*0.5,-h2,0,wx*0.5,-h2,0,wx*0.5,h2,0,-wx*0.5,h2,0)
+end
+else
+obj.setfont(font,50,0,0)
+obj.load("J")
+obj.draw(25*r3*0.5,-50)
+obj.load("O")
+obj.draw(-25*r3*0.5,-25)
+obj.load("K")
+obj.draw(25*r3*0.5,0)
+obj.load("E")
+obj.draw(-25*r3*0.5,25)
+obj.load("R")
+obj.draw(25*r3*0.5,50)
+end
+end
+obj.setoption("blend","alpha_sub")
+obj.copybuffer("obj","cache:toram")
+obj.effect("Reversal","Transparency inversion",1)
+obj.draw()
+obj.copybuffer("cache:torao","tmp")
+obj.setoption("blend","force")
+
+--Back
+obj.setoption("dst","tmp",w,h)
+obj.load("figure","Square",ucolor)
+obj.drawpoly(-w2,-h2,0,w2,-h2,0,w2,h2,0,-w2,h2,0)
+if uflag then
+if uma==0 then
+obj.load(uflag)
+obj.drawpoly(-w2+waku,-h2+waku,0,w2-waku,-h2+waku,0,w2-waku,h2-waku,0,-w2+waku,h2-waku,0)
+else
+obj.copybuffer("obj","cache:uratmp")
+obj.draw()
+end
+else
+obj.load("figure","Square",0)
+obj.drawpoly(-w2+r,-h2+r,0,w2-r,-h2+r,0,w2-r,h2-r,0,-w2+r,h2-r,0)
+obj.load("figure","Square",0xffffff)
+obj.drawpoly(-w2+r+5,-h2+r+5,0,w2-r-5,-h2+r+5,0,w2-r-5,h2-r-5,0,-w2+r+5,h2-r-5,0)
+end
+obj.setoption("blend","alpha_sub")
+obj.copybuffer("obj","cache:toram")
+obj.effect("Reversal","Transparency inversion",1)
+obj.draw()
+obj.copybuffer("cache:torau","tmp")
+obj.setoption("blend","force")
+
+--Render
+obj.setoption("dst","frm")
+obj.setoption("culling",1)
+obj.copybuffer("obj","cache:torao")
+obj.effect()
+obj.draw(px,py,pz,1,1,rx,ry,rz)
+obj.copybuffer("obj","cache:torau")
+if fil==0 then
+obj.effect("Reversal","Flip horizontal",1)
+obj.effect()
+obj.effect("Reversal","Flip horizontal",1)
+end
+obj.rz=-obj.rz
+obj.cx=-obj.cx
+obj.cz=-obj.cz
+obj.draw(px,py,pz,1,1,rx,ry+180,-rz)
+end
+obj.setoption("focus_mode","fixed_size")
+
+
+@TrumpCard
+--track0:Size,10,500,200,1
+--track1:Bluntness,0,200,20,1
+--track2:Number,1,1000,1,1
+--track3:TextSize,1,500,34,1
+--check0:Show Anchor,0
+--dialog:PatternFolder,Fname="";AspectRatio,hi=1.41;Text,Text="";Font,font="MS UI Gothic";Decorate_0~4,ac=0;Color1/col,c1=0x000000;Color2/col,c2=0xffffff;TextPriority,Pri=1;Add Layout,Lout=0;Add Num,Addn={};FrontSideOnly/chk,of=0;pos,pos={0,0};BackBorderColor/col,local ucolor=0xffffff;BorderMargin,local waku=0;BluntInnerSquare/chk,local uma=0;
+local fname=Fname
+local text=Text
+local lout=Lout
+local addn=Addn
+if hi==nil then
+hi=1.41
+end
+local w=obj.track0
+local h=w*hi
+local r=obj.track1
+local w2=w*0.5
+local h2=h*0.5
+local min=math.min(w2,h2)
+if min<r then
+r=min
+end
+if ac==nil then
+ac=0
+end
+if c1==nil then
+c1=0
+end
+if c2==nil then
+c2=0xffffff
+end
+if lout==nil then
+lout=0
+end
+if lout<0 then
+lout=0
+elseif 7<lout then
+lout=7
+end
+if addn==nil then
+addn={}
+end
+if waku==nil then
+waku=0
+end
+if min<waku then
+waku=min
+end
+if ucolor==nil then
+ucolor=0xffffff
+end
+local n=math.floor(obj.track2)
+local s=obj.track3
+local path=obj.getinfo("script_path")..fname
+local uflag=false
+local oflag=false
+local hflag=false
+local eopen=function(name,gara)
+local exten={".PNG",".jpg",".JPG",".Png",".pNg",".pnG",".PNg",".PnG",".pNG",".Jpg",".jPg",".jpG",".JPg",".JpG",".jPG"}
+local flag=name.."\\"..gara..".png"
+for i=1,16 do
+local t=io.open(flag,"r")
+if t==nil then
+if i~=16 then
+flag=name.."\\"..gara..exten[i]
+else
+flag=false
+end
+else
+t:close()
+break
+end
+end
+return flag
+end
+if fname~="" then
+uflag=eopen(path,"u")
+nflag=eopen(path,n)
+end
+
+local px=0
+local py=0
+local pz=0
+local rx=0
+local ry=0
+local rz=0
+
+--Shape
+obj.setoption("dst","tmp",w,h)
+obj.load("figure","Square",0xffffff)
+obj.drawpoly(-w2,-h2+r,0,w2,-h2+r,0,w2,h2-r,0,-w2,h2-r,0)
+obj.drawpoly(-w2+r,-h2,0,w2-r,-h2,0,w2-r,h2,0,-w2+r,h2,0)
+obj.load("figure","Circle",0xffffff,r*2*10)
+obj.draw(-w2+r,-h2+r,0,0.1)
+obj.draw(w2-r,-h2+r,0,0.1)
+obj.draw(w2-r,h2-r,0,0.1)
+obj.draw(-w2+r,h2-r,0,0.1)
+obj.copybuffer("cache:toram","tmp")
+
+if uma==1 and uflag then
+local tw=(w2-waku)
+local th=(h2-waku)
+obj.setoption("dst","tmp",2*tw,2*th)
+obj.load("figure","Square",0xffffff)
+obj.drawpoly(-tw,-th+r,0,tw,-th+r,0,tw,th-r,0,-tw,th-r,0)
+obj.drawpoly(-tw+r,-th,0,tw-r,-th,0,tw-r,th,0,-tw+r,th,0)
+obj.load("figure","Circle",0xffffff,r*2*10)
+obj.draw(-tw+r,-th+r,0,0.1)
+obj.draw(tw-r,-th+r,0,0.1)
+obj.draw(tw-r,th-r,0,0.1)
+obj.draw(-tw+r,th-r,0,0.1)
+obj.copybuffer("cache:uratmp","tmp")
+obj.load(uflag)
+obj.setoption("dst","tmp",2*tw,2*th)
+obj.drawpoly(-tw,-th,0,tw,-th,0,tw,th,0,-tw,th,0)
+obj.setoption("blend","alpha_sub")
+obj.copybuffer("obj","cache:uratmp")
+obj.effect("Reversal","Transparency inversion",1)
+obj.draw()
+obj.copybuffer("cache:uratmp","tmp")
+obj.setoption("blend","force")
+end
+
+
+local pn=0
+if text~="" then
+pn=1
+end
+if 0<lout then
+pn=pn+lout*2
+end
+
+if 0<pn then
+obj.setanchor("pos",pn)
+end
+for i=1,lout do
+addn[i]=eopen(path,"lay"..tostring(addn[i]))
+end
+local pri=Pri
+if pri==nil or pri<=0 then
+pri=1
+end
+if lout+1<pri then
+pri=lout+1
+end
+
+
+--Front
+obj.setoption("dst","tmp",w,h)
+obj.load("figure","Square",0xffffff)
+obj.drawpoly(-w2,-h2,0,w2,-h2,0,w2,h2,0,-w2,h2,0)
+if nflag then
+obj.load(nflag)
+obj.drawpoly(-w2,-h2,0,w2,-h2,0,w2,h2,0,-w2,h2,0)
+end
+if 0<pn then
+local t=0
+if text=="" then
+t=-1
+end
+for i=1,pri-1 do
+if addn[i] then
+obj.load(addn[i])
+local i1=i*2+t
+local i2=i*2+1+t
+obj.drawpoly(pos[i1*2-1],pos[i1*2],0,pos[i2*2-1],pos[i1*2],0,pos[i2*2-1],pos[i2*2],0,pos[i1*2-1],pos[i2*2],0)
+end
+end
+if text~="" then
+obj.setfont(font,s,ac,c1,c2)
+obj.load(text)
+if string.byte(font,1)==64 then
+obj.effect("Locked Rotation","90 degree rotation",1)
+end
+obj.draw(pos[1],pos[2])
+end
+for i=pri,lout do
+if addn[i] then
+obj.load(addn[i])
+local i1=i*2+t
+local i2=i*2+1+t
+obj.drawpoly(pos[i1*2-1],pos[i1*2],0,pos[i2*2-1],pos[i1*2],0,pos[i2*2-1],pos[i2*2],0,pos[i1*2-1],pos[i2*2],0)
+end
+end
+if obj.check0 then
+obj.load("figure","Circle",0xff00,20)
+for i=1,pn do
+obj.draw(pos[i*2-1],pos[i*2])
+end
+end
+end
+obj.setoption("blend","alpha_sub")
+obj.copybuffer("obj","cache:toram")
+obj.effect("Reversal","Transparency inversion",1)
+obj.draw()
+obj.copybuffer("cache:torao","tmp")
+obj.setoption("blend","force")
+
+font=nil
+ac=nil
+c1=nil
+c2=nil
+Fname=nil
+Text=nil
+Lout=nil
+hi=nil
+pri=nil
+
+--Back
+obj.setoption("dst","tmp",w,h)
+obj.load("figure","Square",ucolor)
+obj.drawpoly(-w2,-h2,0,w2,-h2,0,w2,h2,0,-w2,h2,0)
+if uflag then
+if uma==0 then
+obj.load(uflag)
+obj.drawpoly(-w2+waku,-h2+waku,0,w2-waku,-h2+waku,0,w2-waku,h2-waku,0,-w2+waku,h2-waku,0)
+else
+obj.copybuffer("obj","cache:uratmp")
+obj.draw()
+end
+end
+obj.setoption("blend","alpha_sub")
+obj.copybuffer("obj","cache:toram")
+obj.effect("Reversal","Transparency inversion",1)
+obj.draw()
+obj.copybuffer("cache:torau","tmp")
+obj.setoption("blend","force")
+
+--Render
+obj.setoption("dst","frm")
+obj.setoption("culling",1)
+obj.copybuffer("obj","cache:torao")
+obj.effect()
+obj.draw(px,py,pz,1,1,rx,ry,rz)
+obj.copybuffer("obj","cache:torau")
+if of==0 then
+obj.effect("Reversal","Flip horizontal",1)
+obj.effect()
+obj.effect("Reversal","Flip horizontal",1)
+end
+obj.rz=-obj.rz
+obj.cx=-obj.cx
+obj.cz=-obj.cz
+obj.draw(px,py,pz,1,1,rx,ry+180,rz)
+obj.setoption("focus_mode","fixed_size")

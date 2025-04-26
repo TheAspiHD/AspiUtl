@@ -1,0 +1,10 @@
+[vo]
+length=6
+[vo.0]
+_name=Coordinate
+X=0.0,0.0,103
+Y=10.0,0.0,103
+Z=0.0,0.0,103
+[vo.1]
+_name=Clearness
+Clearness=100.0,0.0,103

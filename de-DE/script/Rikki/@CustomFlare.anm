@@ -1,0 +1,1172 @@
+@Base
+--track0:Shift,-500,500,0
+--track1:Mode,0,1,0,1
+--dialog:BaseColor/col,local col=0x5588ff;MovePos/chk,local mv=0;Coordinate,pos={-200,-100,0, 0,0,0};
+
+  if mv==0 then
+    obj.setanchor("pos",2,"line","xyz")
+    CustomFlareXX=pos[1]
+    CustomFlareYY=pos[2]
+    CustomFlareZZ=pos[3]
+    CustomFlareCX=pos[4]
+    CustomFlareCY=pos[5]
+    CustomFlareCZ=pos[6]
+  else
+    obj.setanchor("pos",4,"line","xyz","inout")
+
+    local s=obj.track0*0.01
+    CustomFlareXX=(1-s)*pos[1]+s*pos[7]
+    CustomFlareYY=(1-s)*pos[2]+s*pos[8]
+    CustomFlareZZ=(1-s)*pos[3]+s*pos[9]
+    CustomFlareCX=(1-s)*pos[4]+s*pos[10]
+    CustomFlareCY=(1-s)*pos[5]+s*pos[11]
+    CustomFlareCZ=(1-s)*pos[6]+s*pos[12]
+
+  end
+
+  CustomFlaredX = CustomFlareCX-CustomFlareXX
+  CustomFlaredY = CustomFlareCY-CustomFlareYY
+  CustomFlaredZ = CustomFlareCZ-CustomFlareZZ
+  CustomFlareColor = col
+
+  CustomFlareW,CustomFlareH=obj.getpixel()
+  CustomFlareMode=1+3*obj.track1
+
+
+@Iris
+--track0:Shape,1,10,1,1
+--track1:Count,1,100,4,1
+--track2:Size(%),0,5000,30
+--track3:Strength,0,100,50
+--dialog:SizePlus(%),local dsize=50;SuccessiveEnlarge/chk,local biger=0;StrPlus(%),local dalp=5;BaseColor/chk,local basechk=1;Color/col,local col=0xccccff;ColorPlus(%),local dcol=5;Pos(%),local PP={0,5};PosOffset,local OFSET={0,0,0};Scatter(%),local SIG={100,25};Spin,local KAITEN={0,0};Match anchor/chk,local acr=0;Blur,local blur=10;Blink,local blink=0.2;RandomSeed,local seed=0;
+
+  obj.copybuffer("tmp","obj")
+  obj.setoption("drawtarget","tempbuffer")
+  obj.setoption("blend",CustomFlareMode)
+  if basechk==1 then
+    col=CustomFlareColor
+  end
+
+  local fig  =obj.track0
+  local count=obj.track1
+  local size =obj.track2*0.01
+  local alp  =obj.track3*0.01
+  local t=PP[1]*0.01
+  local dt=PP[2]
+  local sp=SIG[1]*0.01
+  local dsp=SIG[2]
+  local rot=KAITEN[1]
+  local drot=KAITEN[2]*0.5
+  OFSET[1]=OFSET[1]*0.01
+  OFSET[2]=OFSET[2]*0.01
+  OFSET[3]=OFSET[3]*0.01
+
+  obj.load("image",obj.getinfo("script_path").."CF-image\\I"..fig..".png")
+  obj.effect("Gradient","color",col,"color2",col,"blend",5)
+  obj.effect("Blur","Range",blur)
+
+  local OF=math.floor(obj.time*obj.framerate)
+  for i=1,count do
+
+    if dcol>0 then
+      obj.load("image",obj.getinfo("script_path").."CF-image\\I"..fig..".png")
+      local h,s,v = HSV(col)
+      h=math.floor(h+math.floor(3.6*obj.rand(0,dcol,i,seed)))%360
+      col = HSV(h,s,v)
+      obj.effect("Gradient","color",col,"color2",col,"blend",5)
+      obj.effect("Blur","Range",blur)
+    end
+
+    local hi=((i-0.5)/count-0.5)*(1+obj.rand(-dsp,dsp,i,1000+seed)*0.01)
+    hi=t+hi*sp
+    local ox=CustomFlaredX*(hi+obj.rand(-dt,dt,i,2000+seed)*0.005+OFSET[1])
+    local oy=CustomFlaredY*(hi+obj.rand(-dt,dt,i,3000+seed)*0.005+OFSET[2])
+    local oz=CustomFlaredZ*(hi+obj.rand(-dt,dt,i,4000+seed)*0.005+OFSET[3])
+
+    local zoom=CustomFlaredX*CustomFlaredX+CustomFlaredY*CustomFlaredY+CustomFlaredZ*CustomFlaredZ
+
+    if zoom==0 or biger==0 then
+      zoom=1
+    else
+      zoom=math.sqrt(((CustomFlaredX+ox)*(CustomFlaredX+ox)+(CustomFlaredY+oy)*(CustomFlaredY+oy)+(CustomFlaredZ+oz)*(CustomFlaredZ+oz))/zoom*0.25)
+    end
+
+    ox=CustomFlareCX+ox
+    oy=CustomFlareCY+oy
+    oz=CustomFlareCZ+oz
+
+    zoom=zoom*size*(1-obj.rand(0,dsize,i,5000+seed)*0.01)
+
+    local alpha = obj.rand(0,100,i,OF+seed)/100+(1-blink)
+    if alpha>1 then alpha=1 end
+    alpha=alp*alpha*obj.rand(100-dalp*0.5,100+dalp*0.5,i,6000+seed)*0.01
+
+    local rz=rot+obj.rand(-drot,drot,i,7000+seed)
+    if acr==1 then
+      rz=rz+math.deg(math.atan2(CustomFlaredY,CustomFlaredX))
+    end
+    obj.draw(ox,oy,oz,zoom,alpha,0,0,rz)
+
+  end
+
+  obj.load("tempbuffer")
+  obj.setoption("blend",0)
+
+
+@Iris(Single)
+--track0:Shape,1,10,1,1
+--track1:Size(%),0,5000,30
+--track2:Strength,0,100,50
+--track3:Blur,0,1000,5
+
+--dialog:BaseColor/chk,local basechk=1;Color/col,local col=0xccccff;Pos(%),local t=0;PosOffset(%),local OFSET={0,0,0};Spin,local rot=0;Match anchor/chk,local acr=0;Blink,local blink=0.2;
+
+  obj.copybuffer("tmp","obj")
+  obj.setoption("drawtarget","tempbuffer")
+  obj.setoption("blend",CustomFlareMode)
+  if basechk==1 then
+    col=CustomFlareColor
+  end
+
+  local alpha = obj.rand(0,100)/100+(1-blink)
+  if alpha>1 then alpha=1 end
+  alpha=alpha* obj.track2*0.01
+
+  local fig  =obj.track0
+  local size =obj.track1*0.01
+  local blur=obj.track3
+  t=t*0.01
+
+  obj.load("image",obj.getinfo("script_path").."CF-image\\I"..fig..".png")
+  obj.effect("Gradient","color",col,"color2",col,"blend",5)
+  obj.effect("Blur","Range",blur)
+
+  ox=CustomFlareCX+t*CustomFlaredX+OFSET[1]*CustomFlaredX*0.01
+  oy=CustomFlareCY+t*CustomFlaredY+OFSET[2]*CustomFlaredY*0.01
+  oz=CustomFlareCZ+t*CustomFlaredZ+OFSET[3]*CustomFlaredZ*0.01
+
+  if acr==1 then
+    rot=rot+math.deg(math.atan2(CustomFlaredY,CustomFlaredX))
+  end
+
+  obj.draw(ox,oy,oz,size,alpha,0,0,rot)
+
+  obj.load("tempbuffer")
+  obj.setoption("blend",0)
+
+
+@Ring
+--track0:Size,0,5000,200
+--track1:Width,0,4000,10
+--track2:Count,1,100,3,1
+--track3:Strength,0,100,50
+--dialog:SizePlus(%),local dsize=50;SuccessiveEnlarge/chk,local biger=0;StrPlus(%),local dalp=5;BaseColor/chk,local basechk=1;Color/col,local col=0xccccff;ColorPlus(%),local dcol=5;Pos(%),local PP={0,5};PosOffset,local OFSET={0,0,0};Scatter(%),local SIG={100,25};Blur,local blur=10;Blink,local blink=0.2;RandomSeed,local seed=0;
+
+  obj.copybuffer("tmp","obj")
+  obj.setoption("drawtarget","tempbuffer")
+  obj.setoption("blend",CustomFlareMode)
+  if basechk==1 then
+    col=CustomFlareColor
+  end
+
+  local size =obj.track0
+  local haba =obj.track1
+  local count=obj.track2
+  local alp  =obj.track3*0.01
+
+  local t=PP[1]
+  local dt=PP[2]
+  local sp=SIG[1]*0.01
+  local dsp=SIG[2]
+  OFSET[1]=OFSET[1]*0.01
+  OFSET[2]=OFSET[2]*0.01
+  OFSET[3]=OFSET[3]*0.01
+
+  obj.load("figure","Circle",col,size,haba)
+  obj.effect("Blur","Range",blur)
+
+  local OF=math.floor(obj.time*obj.framerate)
+  for i=1,count do
+
+    if dcol>0 then
+      local h,s,v = HSV(col)
+      h=math.floor(h+3.6*obj.rand(0,dcol,i,seed))%360
+      col = HSV(h,s,v)
+      obj.load("figure","Circle",col,size,haba)
+      obj.effect("Blur","Range",blur)
+    end
+
+    local hi=((i-0.5)/count-0.5)*(1+obj.rand(-dsp,dsp,i,1000+seed)*0.01)
+    hi=t+hi*sp
+    local ox=CustomFlaredX*(hi+obj.rand(-dt,dt,i,2000+seed)*0.005+OFSET[1])
+    local oy=CustomFlaredY*(hi+obj.rand(-dt,dt,i,3000+seed)*0.005+OFSET[2])
+    local oz=CustomFlaredZ*(hi+obj.rand(-dt,dt,i,4000+seed)*0.005+OFSET[3])
+
+    local zoom=CustomFlaredX*CustomFlaredX+CustomFlaredY*CustomFlaredY+CustomFlaredZ*CustomFlaredZ
+
+    if zoom==0 or biger==0 then
+      zoom=1
+    else
+      zoom=math.sqrt(((CustomFlaredX+ox)*(CustomFlaredX+ox)+(CustomFlaredY+oy)*(CustomFlaredY+oy)+(CustomFlaredZ+oz)*(CustomFlaredZ+oz))/zoom*0.25)
+    end
+
+    ox=CustomFlareCX+ox
+    oy=CustomFlareCY+oy
+    oz=CustomFlareCZ+oz
+
+    zoom=zoom*(1-obj.rand(0,dsize,i,5000+seed)*0.01)
+
+
+    local alpha = obj.rand(0,100,i,OF+seed)/100+(1-blink)
+    if alpha>1 then alpha=1 end
+    alpha=alp*alpha*obj.rand(100-dalp*0.5,100+dalp*0.5,i,6000+seed)*0.01
+    obj.draw(ox,oy,oz,zoom,alpha)
+
+  end
+
+  obj.load("tempbuffer")
+  obj.setoption("blend",0)
+
+
+@Ring(Single)
+--track0:Size,0,5000,200
+--track1:Width,0,4000,10
+--track2:Strength,0,100,50
+--track3:Blur,0,1000,10
+
+--dialog:BaseColor/chk,local basechk=1;Color/col,local col=0xccccff;Pos(%),local dt=0;PosOffset,local OFSET={0,0,0};Blink,local blink=0.2;
+
+  obj.copybuffer("tmp","obj")
+  obj.setoption("drawtarget","tempbuffer")
+  obj.setoption("blend",CustomFlareMode)
+  if basechk==1 then
+    col=CustomFlareColor
+  end
+
+  local alpha = obj.rand(0,100)/100+(1-blink)
+  if alpha>1 then alpha=1 end
+  alpha=alpha* obj.track2*0.01
+
+  local size =obj.track0
+  local haba =obj.track1
+  local blur=obj.track3
+
+  dt=dt*0.01
+
+  obj.load("figure","Circle",col,size,haba)
+  obj.effect("Blur","Range",blur)
+
+  ox=CustomFlareCX+dt*CustomFlaredX+OFSET[1]*CustomFlaredX*0.01
+  oy=CustomFlareCY+dt*CustomFlaredY+OFSET[2]*CustomFlaredY*0.01
+  oz=CustomFlareCZ+dt*CustomFlaredZ+OFSET[3]*CustomFlaredZ*0.01
+
+  obj.draw(ox,oy,oz,1,alpha)
+
+  obj.load("tempbuffer")
+  obj.setoption("blend",0)
+
+
+@2ColorRing(Single)
+--track0:Size,0,5000,200
+--track1:Width,0,4000,20
+--track2:Strength,0,100,80
+--track3:Spin,-3600,3600,0
+
+--dialog:BaseColor/chk,local basechk=0;Color1/col,local col1=0xff0000;Color2/col,local col2=0x22ff22;GradWidth,local grh=40;Blur,local blur=5;Opening(%),local ew=40;BlurOpening(%),local bw=20;Pos(%),local t=25;PosOffset,local OFSET={0,0,0};AutoDel/chk,local auba=0;RefDist,local Rmax=400;Blink,local blink=0.2;
+
+  obj.copybuffer("tmp","obj")
+  obj.setoption("drawtarget","tempbuffer")
+  obj.setoption("blend",CustomFlareMode)
+
+  local alpha = obj.rand(0,100)/100+(1-blink)
+  if alpha>1 then alpha=1 end
+  alpha=alpha*obj.track2*0.01
+
+  if auba==1 then
+    alpha=alpha*math.sqrt(CustomFlaredX*CustomFlaredX+CustomFlaredY*CustomFlaredY+CustomFlaredZ*CustomFlaredZ)/Rmax
+  end
+
+  local l =obj.track0*math.pi/4
+  local cy =(l-obj.track1*math.pi)*0.5
+
+  local rot=obj.track3+math.deg(math.atan2(CustomFlaredY,CustomFlaredX))-90
+
+  t=t*0.01
+
+  obj.load("figure","Square",CustomFlareColor,l)
+  obj.effect("Diagonal clipping","Angle",-180,"Center Y",cy)
+
+  if basechk==0 then
+    obj.effect("Gradient","color",col1,"color2",col2,"Center Y",cy/2+l/4,"Width",grh)
+  end
+
+  if ew>0 then
+    obj.effect("Diagonal clipping","Angle",90,"Width",l*(100-ew)*0.01,"Blur",l*bw*0.01)
+  end
+
+  obj.effect("Polar coordinate conversion")
+
+  obj.effect("Blur","Range",blur)
+
+  ox=CustomFlareCX+t*CustomFlaredX+OFSET[1]*CustomFlaredX*0.01
+  oy=CustomFlareCY+t*CustomFlaredY+OFSET[2]*CustomFlaredY*0.01
+  oz=CustomFlareCZ+t*CustomFlaredZ+OFSET[3]*CustomFlaredZ*0.01
+
+  obj.draw(ox,oy,oz,1,alpha,0,0,rot)
+
+  obj.load("tempbuffer")
+  obj.setoption("blend",0)
+
+@Disc
+--track0:Size,0,5000,300
+--track1:Strength,0,100,50
+--track2:Blur(%),0,100,10
+--track3:Pos(%),-5000,5000,0
+
+--dialog:BaseColor/chk,local basechk=1;Color/col,local col=0xccccff;PosOffset(%),local OFSET={0,0,0};Blink,local blink=0.2;
+
+  obj.copybuffer("tmp","obj")
+  obj.setoption("drawtarget","tempbuffer")
+  obj.setoption("blend",CustomFlareMode)
+  if basechk==1 then
+    col=CustomFlareColor
+  end
+
+  local alpha = obj.rand(0,100)/100+(1-blink)
+  if alpha>1 then alpha=1 end
+  alpha=alpha* obj.track1*0.01
+
+  local size =obj.track0
+  local blur=obj.track2
+  local t=obj.track3*0.01
+
+  obj.load("figure","Circle",col,100)
+
+  obj.effect("Blur","Range",blur)
+
+  ox=CustomFlareCX+t*CustomFlaredX+OFSET[1]*CustomFlaredX*0.01
+  oy=CustomFlareCY+t*CustomFlaredY+OFSET[2]*CustomFlaredY*0.01
+  oz=CustomFlareCZ+t*CustomFlaredZ+OFSET[3]*CustomFlaredZ*0.01
+
+  obj.draw(ox,oy,oz,size/100,alpha)
+
+  obj.load("tempbuffer")
+  obj.setoption("blend",0)
+
+
+@Glow
+--track0:Size,1,5000,80
+--track1:Blur(%),1,1000,10
+--track2:Strength,0,100,30
+--track3:CenterStr,0,100,100
+
+--dialog:BaseColor/chk,local basechk=1;Color/col,local col=0xccccff;Pos(%),local t=-100;PosOffset(%),local OFSET={0,0,0};CenterSize(%),local hs=80;AutoZoom/chk,local aubg=0;RefDist,local Rmax=400;
+
+  obj.copybuffer("tmp","obj")
+  obj.setoption("drawtarget","tempbuffer")
+  obj.setoption("blend",CustomFlareMode)
+  if basechk==1 then
+    col=CustomFlareColor
+  end
+
+  local size =obj.track0
+  local alp =obj.track2*0.01
+  hs=hs*0.01
+
+  if aubg==1 then
+    size=size*(1-math.sqrt(CustomFlaredX*CustomFlaredX+CustomFlaredY*CustomFlaredY+CustomFlaredZ*CustomFlaredZ)/Rmax)
+    if size<0 then size=0 end
+  end
+
+  local blur =size*obj.track1*0.01
+
+  local dx=(t+OFSET[1])*0.01*CustomFlaredX+CustomFlareCX
+  local dy=(t+OFSET[2])*0.01*CustomFlaredY+CustomFlareCY
+  local dz=(t+OFSET[3])*0.01*CustomFlaredZ+CustomFlareCZ
+
+  obj.load("figure","Circle",col,size)
+  obj.effect("Blur","Range",blur)
+  obj.draw(dx,dy,dz,1,alp)
+
+  obj.load("figure","Circle",0xffffff,size*hs)
+  obj.effect("Blur","Range",blur*hs)
+  obj.draw(dx,dy,dz,1,alp*obj.track3*0.01)
+
+  obj.load("tempbuffer")
+  obj.setoption("blend",0)
+
+
+@Streak
+--track0:Length,0,2000,400
+--track1:Height,0,2000,20
+--track2:Strength,0,100,50
+--track3:Spin,-3600,3600,0
+
+--dialog:BaseColor/chk,local basechk=1;LightColor/col,local col=0x9999ff;Pos(%),local t=-100;PosOffset(%),local OFSET={0,0,0};Match anchor/chk,local acr=0;Blink,local blink=0.1;
+
+  obj.copybuffer("tmp","obj")
+  obj.setoption("drawtarget","tempbuffer")
+  obj.setoption("blend",CustomFlareMode)
+  if basechk==1 then
+    col=CustomFlareColor
+  end
+
+  local alpha = obj.rand(0,100)/100+(1-blink)
+  if alpha>1 then alpha=1 end
+  alpha=alpha* obj.track2*0.01
+  local l = obj.track0*2
+  local r = obj.track1*0.5
+  local rot = -obj.track3/180*math.pi
+
+  if acr==1 then
+    rot=rot-math.atan2(CustomFlaredY,CustomFlaredX)
+  end
+
+  obj.load("figure","Circle",col,r)
+  obj.effect("Blur","Range",r/2.5)
+
+  local dx=(t+OFSET[1])*0.01*CustomFlaredX+CustomFlareCX
+  local dy=(t+OFSET[2])*0.01*CustomFlaredY+CustomFlareCY
+  local dz=(t+OFSET[3])*0.01*CustomFlaredZ+CustomFlareCZ
+
+  local a = alpha
+  local yr = r
+  local c=math.cos(rot)
+  local s=math.sin(rot)
+
+  for i=1,3 do
+    local x0=-l
+    local y0=-yr
+    local x1=-l
+    local y1=yr
+    local x2=l
+    local y2=yr
+    local x3=l
+    local y3=-yr
+    x0,y0=x0*c+y0*s+dx,-x0*s+y0*c+dy
+    x1,y1=x1*c+y1*s+dx,-x1*s+y1*c+dy
+    x2,y2=x2*c+y2*s+dx,-x2*s+y2*c+dy
+    x3,y3=x3*c+y3*s+dx,-x3*s+y3*c+dy
+    obj.drawpoly(x0,y0,dz,x1,y1,dz,x2,y2,dz,x3,y3,dz   , 0,0,obj.w,0,obj.w,obj.h,0,obj.h ,a)
+    a = a/2
+    yr = yr*2
+  end
+ 
+  obj.load("tempbuffer")
+  obj.setoption("blend",0)
+
+
+@Streak(Multi)
+--track0:Length,0,2000,400
+--track1:Height,0,2000,5
+--track2:Strength,0,100,100
+--track3:Spin,-3600,3600,0
+
+--dialog:BaseColor/chk,local basechk=1;LightColor/col,local col=0x9999ff;Count,local n=3;Pos(%),local t=-100;PosOffset(%),local OFSET={0,0,0};Zoom,local exp=50;Interval,local dh=5;RandIntvl,local ddh=5;RandHori,local dw=10;Blink,local blink=0.1;
+
+  require("extbuffer")
+
+  local id1 = extbuffer.freeid()
+  extbuffer.write(id1)  --Save BG to id1
+
+  if basechk==1 then
+    col=CustomFlareColor
+  end
+
+  local l = obj.track0*2
+  local r = obj.track1*0.5
+  local rot = obj.track3
+  exp=exp*0.01
+
+  obj.load("figure","Circle",col,r)
+  obj.effect("Blur","Range",r/2.5)
+
+  obj.setoption("blend",0)
+  obj.setoption("drawtarget","tempbuffer",2*l,8*r)
+
+  local a = 1
+  local yr = r
+  for i=1,3 do
+    local x0=-l
+    local y0=-yr
+    local x1=-l
+    local y1=yr
+    local x2=l
+    local y2=yr
+    local x3=l
+    local y3=-yr
+    obj.drawpoly(x0,y0,0,x1,y1,0,x2,y2,0,x3,y3,0 , 0,0,obj.w,0,obj.w,obj.h,0,obj.h)
+    a = a/2
+    yr = yr*2
+  end
+  obj.load("tempbuffer")
+
+  local id2 = extbuffer.freeid()
+  extbuffer.write(id2)  --Save streak to id2
+
+  extbuffer.read(id1)  --read BG
+  obj.copybuffer("tmp","obj")
+
+  extbuffer.read(id2)  --read streak
+  obj.setoption("blend",CustomFlareMode)
+
+  local dx=(t+OFSET[1])*0.01*CustomFlaredX+CustomFlareCX
+  local dy=(t+OFSET[2])*0.01*CustomFlaredY+CustomFlareCY
+  local dz=(t+OFSET[3])*0.01*CustomFlaredZ+CustomFlareCZ
+
+  local cos=math.cos(rot*math.pi/180)
+  local sin=math.sin(-rot*math.pi/180)
+  local of =obj.time*obj.framerate
+  for i=0,n-1 do
+ 
+    local alpha = obj.rand(0,100,i,of)/100+(1-blink)
+    if alpha>1 then alpha=1 end
+    alpha=alpha* obj.track2*0.01
+
+    local ox=obj.rand(-dw,dw,i,1000)*0.5
+    local oy=(i-(n-1)*0.5)*dh+obj.rand(-ddh,ddh,i,2000)*0.5
+    
+    ox,oy=cos*ox+sin*oy,-sin*ox+cos*oy
+  
+    obj.draw(ox+dx,oy+dy,dz,exp,alpha,0,0,rot)
+
+  end
+
+  obj.load("tempbuffer")
+  obj.setoption("blend",0)
+
+  extbuffer.clear(id1)
+  extbuffer.clear(id2)
+
+@Spike
+
+--track0:Length,0,3000,230
+--track1:Count,0,5000,50,1
+--track2:Strength,0,200,40
+--track3:Spin,-3600,3600,0
+
+--dialog:BaseColor/chk,local basechk=1;LightColor/col,local col=0x9999ff;Width(%),local dH0=8;RandHeight(%),local hrnd=50;Blur,local blur=5;AngleStep,local spdeg=0;DevAngle,local ddeg=360;Pos(%),local t=-100;PosOffset(%),local OFSET={0,0,0};Shape[1-4],local fig=1;Blink,local blink=0.2;RandomSeed,local seed=0;
+
+  local figmax=4
+
+  obj.copybuffer("tmp","obj")
+  obj.setoption("drawtarget","tempbuffer")
+  obj.setoption("blend",CustomFlareMode)
+  if basechk==1 then
+    col=CustomFlareColor
+  end
+
+  local dL0=obj.track0*0.5
+  local n=obj.track1
+
+  local alpha = obj.rand(0,100)/100+(1-blink)
+  if alpha>1 then alpha=1 end
+  alpha=alpha*obj.track2*0.02
+
+  dH0=dL0*dH0*0.01
+  ddeg=ddeg*0.5
+
+  fig=math.floor(fig)
+  if fig>figmax then fig=figmax end
+  if fig<1 then fig=1 end
+
+  local dx=(t+OFSET[1])*0.01*CustomFlaredX+CustomFlareCX
+  local dy=(t+OFSET[2])*0.01*CustomFlaredY+CustomFlareCY
+  local dz=(t+OFSET[3])*0.01*CustomFlaredZ+CustomFlareCZ
+
+  obj.load("image",obj.getinfo("script_path").."CF-image\\spike"..fig..".png")
+
+  obj.effect("Gradient","color",col,"color2",col,"blend",3)
+  obj.effect("Blur","Range",blur)
+
+  local w0,h0=obj.getpixel()
+  local rz={}
+
+  for i=1,n do
+    local rnd=obj.rand(100-hrnd,100,i,seed)*0.01
+    local dH=dH0*rnd
+    local dL=dL0*rnd
+
+    dH=w0*dH/30
+    dL=h0*dL/100  
+    local rz=math.rad(i*spdeg+obj.rand(-ddeg,ddeg,i,1000+seed)-obj.track3)
+    local r=dL
+    local s=math.sin(rz)
+    local c=math.cos(rz)
+
+    local x0=-dH
+    local y0=dL+r
+    local x1=dH
+    local y1=dL+r
+    local x2=dH
+    local y2=-dL+r
+    local x3=-dH
+    local y3=-dL+r
+
+    x0,y0=x0*c+y0*s+dx,-x0*s+y0*c+dy
+    x1,y1=x1*c+y1*s+dx,-x1*s+y1*c+dy
+    x2,y2=x2*c+y2*s+dx,-x2*s+y2*c+dy
+    x3,y3=x3*c+y3*s+dx,-x3*s+y3*c+dy
+
+   local rp=math.floor(alpha)
+   local md=alpha-rp
+   for i=1,rp do
+     obj.drawpoly(x0,y0,dz,x1,y1,dz,x2,y2,dz,x3,y3,dz,   0,0,obj.w,0,obj.w,obj.h,0,obj.h ,1) 
+   end
+   obj.drawpoly(x0,y0,dz,x1,y1,dz,x2,y2,dz,x3,y3,dz,   0,0,obj.w,0,obj.w,obj.h,0,obj.h ,md)
+
+  end
+
+  obj.load("tempbuffer")
+  obj.setoption("blend",0)
+
+
+@Flicker
+--track0:Size,10,1000,250
+--track1:Lux,0,100,55
+--track2:Strength,0,200,60
+--track3:Spin,-3600,3600,0
+
+--dialog:BaseColor/chk,local basechk=1;LightColor/col,local col=0x9999ff;Pos(%),local t=-100;PosOffset(%),local OFSET={0,0,0};BlurTip(%),rnd=100;FlickerSpd,local speed=0.2;Shape[1-8],local fig=5;BlurClipPos,local clp={0,0,0};ClipFacing/chk,local aub=0;Blink,local blink=0.1;
+
+  obj.copybuffer("tmp","obj")
+  obj.setoption("drawtarget","tempbuffer")
+  obj.setoption("blend",CustomFlareMode)
+  if basechk==1 then
+    col=CustomFlareColor
+  end
+
+  local alpha = obj.rand(0,100)/100+(1-blink)
+  if alpha >1 then alpha=1 end
+  local w = obj.track0
+  local c_num=obj.track1
+  local c_alp=obj.track2*0.01
+
+  fig=math.floor(fig)
+  if fig>8 then fig=8 end
+  if fig<1 then fig=1 end
+
+  local dx=(t+OFSET[1])*0.01*CustomFlaredX+CustomFlareCX
+  local dy=(t+OFSET[2])*0.01*CustomFlaredY+CustomFlareCY
+  local dz=(t+OFSET[3])*0.01*CustomFlaredZ+CustomFlareCZ
+
+  local r = 2*w
+  obj.load("figure","Square",col,r)
+
+  if fig<=4 then
+    obj.effect("Noise","type",fig,"Cycle X",1,"Cycle Y",0,"Threshold",100-c_num,"Speed Y",-speed)
+  else
+    fig=fig-4
+    obj.effect("Noise","type",fig,"Cycle X",c_num*0.05,"Cycle Y",0,"Threshold",0,"Speed Y",-speed)
+  end
+
+  obj.effect("Boundary blurring","Range",r*rnd*0.01,"rAspect",-100)
+
+  clp[1]=-r*(clp[1]/360%1)
+  clp[2]= r*(clp[2]/360%1)
+
+  if aub==1 then
+    clp[1]=-r*(  math.atan2(CustomFlaredY,CustomFlaredX)*0.5+math.pi/4   )/math.pi
+
+  end
+
+  if clp[2]>0 then
+    obj.effect("Diagonal clipping","Angle",90,"中心X",clp[1]-r,"Width",-clp[2],"Blur",clp[3])
+    obj.effect("Diagonal clipping","Angle",90,"中心X",clp[1],"Width",-clp[2],"Blur",clp[3])
+    obj.effect("Diagonal clipping","Angle",90,"中心X",clp[1]+r,"Width",-clp[2],"Blur",clp[3])
+  end
+
+  r = r/2.5
+  obj.effect("Clipping","Top",r)
+  obj.effect("Polar coordinate conversion","Rotation",obj.track3)
+
+  local x0=-r+dx
+  local y0=-r+dy
+  local x1=r+dx
+  local y1=-r+dy
+  local x2=r+dx
+  local y2=r+dy
+  local x3=-r+dx
+  local y3=r+dy
+
+  alpha=alpha*c_alp
+
+  if alpha<=1 then
+    obj.drawpoly(x0,y0,dz,x1,y1,dz,x2,y2,dz,x3,y3,dz,   0,0,obj.w,0,obj.w,obj.h,0,obj.h ,alpha)
+  else
+    obj.drawpoly(x0,y0,dz,x1,y1,dz,x2,y2,dz,x3,y3,dz,   0,0,obj.w,0,obj.w,obj.h,0,obj.h ,1)
+    obj.drawpoly(x0,y0,dz,x1,y1,dz,x2,y2,dz,x3,y3,dz,   0,0,obj.w,0,obj.w,obj.h,0,obj.h ,alpha-1)
+  end
+  obj.load("tempbuffer")
+  obj.setoption("blend",0)
+
+
+@Spark
+--track0:Size,0,5000,400
+--track1:Length,0,1000,60
+--track2:Strength,0,100,20
+--track3:Spin,-3600,3600,0
+
+--dialog:Count,local n=150;BaseColor/chk,local basechk=1;LightColor/col,local col=0x9999ff;Width(%),local dH=10;Blur,local blur=5;RadialBlur,rblur=50;Pos(%),local t=-100;PosOffset(%),local OFSET={0,0,0};Scatter(%),local drh=100;Blink,local blink=0.2;RandomSeed,local seed=0;
+
+  require("extbuffer")
+
+  local id1 = extbuffer.freeid()
+  extbuffer.write(id1)  --Save BG to id1
+
+  if basechk==1 then
+    col=CustomFlareColor
+  end
+
+  local alpha = obj.rand(0,100)/100+(1-blink)
+  if alpha >1 then alpha=1 end
+
+  local size=obj.track0*0.5
+  local dL=obj.track1*0.5
+  alpha=alpha*obj.track2*0.01
+  local rot=obj.track3;
+
+  dH=dL*dH*0.01
+
+  local dx=(t+OFSET[1])*0.01*CustomFlaredX+CustomFlareCX
+  local dy=(t+OFSET[2])*0.01*CustomFlaredY+CustomFlareCY
+  local dz=(t+OFSET[3])*0.01*CustomFlaredZ+CustomFlareCZ
+
+  obj.load("image",obj.getinfo("script_path").."CF-image\\leaf.png")
+  obj.effect("Gradient","color",col,"color2",col,"blend",3)
+
+  obj.effect("Blur","Range",blur)
+
+  local w0,h0=obj.getpixel()
+
+  local LS=dL
+  local LL=math.max(size*0.5,dL)
+  dH=w0*dH/30
+  dL=h0*dL/100  
+  drh=drh*0.01
+
+  local wh=2*(dL+LL)
+
+  obj.setoption("drawtarget","tempbuffer",wh,wh)
+  obj.setoption("blend",6)
+
+  LS=drh*LS+(1-drh)*LL
+
+  for i=1,n do
+    local rz=(obj.rand(-3600,3600,i,seed)*0.1-rot)*math.pi/180
+    local r=obj.rand(LS,LL,i,1000+seed)
+    local s=math.sin(rz)
+    local c=math.cos(rz)
+
+    local x0=-dH
+    local y0=-dL+r
+    local x1=dH
+    local y1=-dL+r
+    local x2=dH
+    local y2=dL+r
+    local x3=-dH
+    local y3=dL+r
+
+    x0,y0=x0*c+y0*s,-x0*s+y0*c
+    x1,y1=x1*c+y1*s,-x1*s+y1*c
+    x2,y2=x2*c+y2*s,-x2*s+y2*c
+    x3,y3=x3*c+y3*s,-x3*s+y3*c
+
+   obj.drawpoly(x0,y0,0,x1,y1,0,x2,y2,0,x3,y3,0,   0,0,obj.w,0,obj.w,obj.h,0,obj.h ,alpha) 
+
+  end
+
+  obj.load("tempbuffer")
+  obj.effect("Radial Blur","Range",rblur)
+
+  local id2 = extbuffer.freeid()
+  extbuffer.write(id2)  --Save rainbow
+
+  extbuffer.read(id1)  --read BG
+  obj.copybuffer("tmp","obj")
+
+  extbuffer.read(id2)  --read rainbow
+  obj.setoption("blend",CustomFlareMode)
+
+  obj.draw(dx,dy,dz)
+
+  obj.load("tempbuffer")
+  obj.setoption("blend",0)
+
+  extbuffer.clear(id1)
+  extbuffer.clear(id2)
+
+
+@ColorSpark
+--track0:Size,0,5000,400
+--track1:Length,0,1000,100
+--track2:Strength,0,100,60
+--track3:Spin,-3600,3600,0
+
+--dialog:Count,local n=100;ColorPattern[1-5],local fig=1;Width(%),local dH=5;Blur,local blur=5;RadialBlur,rblur=5;Pos(%),local t=-100;PosOffset(%),local OFSET={0,0,0};Scatter(%),local drh=100;Blink,local blink=0.2;RandomSeed,local seed=1;
+
+  local figmax=5
+
+  require("extbuffer")
+
+  local id1 = extbuffer.freeid()
+  extbuffer.write(id1)  --Save BG to id1
+
+  local alpha = obj.rand(0,100)/100+(1-blink)
+  if alpha >1 then alpha=1 end
+
+  local size=obj.track0*0.5
+  local dL=obj.track1*0.5
+  alpha=alpha*obj.track2*0.01
+  local rot=obj.track3;
+  drh=drh*0.01
+
+  fig=math.floor(fig)
+  if fig>figmax then fig=figmax end
+  if fig<1 then fig=1 end
+
+  dH=dL*dH*0.01
+
+  local dx=(t+OFSET[1])*0.01*CustomFlaredX+CustomFlareCX
+  local dy=(t+OFSET[2])*0.01*CustomFlaredY+CustomFlareCY
+  local dz=(t+OFSET[3])*0.01*CustomFlaredZ+CustomFlareCZ
+
+  obj.load("image",obj.getinfo("script_path").."CF-image\\leafc"..fig..".png")
+
+
+  obj.effect("Blur","Range",blur)
+
+  local w0,h0=obj.getpixel()
+
+  local LS=dL
+  local LL=math.max(size*0.5,dL)
+  dH=w0*dH/30
+  dL=h0*dL/100  
+
+  local wh=2*(dL+LL)
+
+  obj.setoption("drawtarget","tempbuffer",wh,wh)
+  obj.setoption("blend",6)
+
+  LS=drh*LS+(1-drh)*LL
+
+  for i=1,n do
+    local rz=(obj.rand(-3600,3600,i,seed)*0.1-rot)*math.pi/180
+    local r=obj.rand(LS,LL,i,1000+seed)
+    local s=math.sin(rz)
+    local c=math.cos(rz)
+
+    local x0=-dH
+    local y0=-dL+r
+    local x1=dH
+    local y1=-dL+r
+    local x2=dH
+    local y2=dL+r
+    local x3=-dH
+    local y3=dL+r
+
+    x0,y0=x0*c+y0*s,-x0*s+y0*c
+    x1,y1=x1*c+y1*s,-x1*s+y1*c
+    x2,y2=x2*c+y2*s,-x2*s+y2*c
+    x3,y3=x3*c+y3*s,-x3*s+y3*c
+
+   obj.drawpoly(x0,y0,0,x1,y1,0,x2,y2,0,x3,y3,0,   0,0,obj.w,0,obj.w,obj.h,0,obj.h ,alpha) 
+
+  end
+
+  obj.load("tempbuffer")
+  obj.effect("Radial Blur","Range",rblur)
+
+  local id2 = extbuffer.freeid()
+  extbuffer.write(id2)  --save rainbow
+
+  extbuffer.read(id1)  --read BG
+  obj.copybuffer("tmp","obj")
+
+  extbuffer.read(id2)  --read rainbow
+  obj.setoption("blend",CustomFlareMode)
+
+  obj.draw(dx,dy,dz)
+
+  obj.load("tempbuffer")
+  obj.setoption("blend",0)
+
+  extbuffer.clear(id1)
+  extbuffer.clear(id2)
+
+@Caustic
+--track0:Size,0,5000,200
+--track1:Strength,0,100,20
+--track2:Blur,0,1000,5
+
+--dialog:BaseColor/chk,local basechk=1;Color/col,local col=0xccccff;Pos(%),local t=100;PosOffset(%),local OFSET={0,0,0};MaxRadius,Rmax=400;Blink,local blink=0.2;
+
+  obj.copybuffer("tmp","obj")
+  obj.setoption("drawtarget","tempbuffer")
+  obj.setoption("blend",CustomFlareMode)
+  if basechk==1 then
+    col=CustomFlareColor
+  end
+
+  local size =obj.track0
+
+  local alpha = obj.rand(0,100)/100+(1-blink)
+  if alpha >1 then alpha=1 end
+
+  alpha =alpha*obj.track1*0.01
+  local blur=obj.track2
+
+  obj.load("image",obj.getinfo("script_path").."CF-image\\ctc1.png")
+
+  obj.effect("Gradient","color",col,"color2",col,"blend",5)
+  obj.effect("Blur","Range",blur)
+
+  local ox=(t+OFSET[1])*0.01*CustomFlaredX
+  local oy=(t+OFSET[2])*0.01*CustomFlaredY
+  local oz=(t+OFSET[3])*0.01*CustomFlaredZ
+
+  local zz=Rmax*Rmax-oy*oy-ox*ox
+  local s1,s2
+
+  if zz>0 then
+    zz=math.sqrt(zz)
+    local rr=math.sqrt(zz*zz+oy*oy)
+    if math.abs(ox)*10000>rr then 
+      s1=math.atan2(ox,rr)/math.pi*180
+      s2=math.atan2(oy,zz)/math.pi*180
+      ox=CustomFlareCX+ox
+      oy=CustomFlareCY+oy
+      oz=CustomFlareCZ+oz
+    else
+      ox,oy,oz,alpha,s1,s2=0,0,0,0,0,0
+    end
+  else
+    ox,oy,oz,alpha,s1,s2=0,0,0,0,0,0
+  end
+
+  obj.draw(ox,oy,oz,size/200,alpha,s2,-s1,0)
+
+  obj.load("image",obj.getinfo("script_path").."CF-image\\ctc2.png")
+  obj.effect("Gradient","color",col,"color2",col,"blend",5)
+  obj.effect("Blur","Range",blur)
+
+  local k=30
+
+  for i=0,k-1 do
+    local ds=i/k
+    obj.draw(ox+ds*CustomFlaredX*0.5,oy+ds*CustomFlaredY*0.5,oz+ds*CustomFlaredZ*0.5,(1-ds)*size/200,3*alpha/k,s2,-s1,0)
+  end
+
+  obj.load("tempbuffer")
+  obj.setoption("blend",0)
+
+
+
+@Rainbow
+--track0:Size,1,5000,250
+--track1:Length(%),1,100,20
+--track2:Strength(%),1,100,50
+--track3:Spin,-3600,3600,0
+--dialog:Pos(%),local t=50;Opening(%),local ds=20;Trimming(%),local spt=0;PosOffset(%),local OFSET={0,0,0};AutoZoom/chk,local aubg=0;RefDist,local Rmax=400;Ellipticity(%),local asp=100;Blur,local blur=1;Pattern[1-4],local fig=1;OverwriteColor/chk,local ovchk=0;Color/col,ovcol=0xccccff;Blink,local blink=0.2;Glow,lt={0,250,80,0};
+
+  local figmax=4
+
+  require("extbuffer")
+
+  local id1 = extbuffer.freeid()
+  extbuffer.write(id1)  --Save BG to id1
+
+  local n=10;
+  local r=obj.track0*0.5
+
+  if aubg==1 then
+    r=r*math.sqrt(CustomFlaredX*CustomFlaredX+CustomFlaredY*CustomFlaredY+CustomFlaredZ*CustomFlaredZ)/Rmax
+  end
+
+  local dr=r*obj.track1*0.01
+
+  local wh=2*(r+dr)
+  obj.setoption("drawtarget","tempbuffer",wh,wh)
+  obj.setoption("blend",0)
+
+  local pi=math.pi
+  local cos=math.cos
+  local sin=math.sin
+
+  local alpha=obj.track2*0.01
+  local rot=obj.track3/180*pi
+
+  ds=ds*0.01
+  spt=spt*0.01
+  asp=asp*0.01
+
+  fig=math.floor(fig)
+  if fig>figmax then fig=figmax end
+  if fig<1 then fig=1 end
+
+  obj.load("image",obj.getinfo("script_path").."CF-image\\hoop"..fig..".png")
+  obj.setoption("antialias",1)
+
+  local ox=(CustomFlaredX)*(t+OFSET[1])*0.01+CustomFlareCX
+  local oy=(CustomFlaredY)*(t+OFSET[2])*0.01+CustomFlareCY
+  local oz=(CustomFlaredZ)*(t+OFSET[3])*0.01+CustomFlareCZ
+
+  rot=rot+math.atan2(CustomFlaredY,CustomFlaredX)
+
+  local kmax=20*n
+
+  local k0=-1
+  for i=0,n-1 do
+  for j=0,19 do
+    k0=k0+1
+    local k1=k0+1
+
+    if spt*0.5*kmax<k0 and k1<(1-spt*0.5)*kmax then
+
+      local t0=(2*k0/kmax-1)*pi
+      local t1=(2*k1/kmax-1)*pi
+
+      if t0>0 then t0=t0*0.99 else t0=t0*1.01 end
+      if t1<0 then t1=t1*0.99 else t1=t1*1.01 end
+
+      local s0=t0
+      local s1=t1
+
+      local t0=t0/(1-ds)
+      local t1=t1/(1-ds)
+
+      if t0<-pi then t0=-pi end
+      if t1<-pi then t1=-pi end
+      if t0>pi then t0=pi end
+      if t1>pi then t1=pi end
+   
+      local r01=r+dr*(cos(t0)+1)/2
+      local r02=r-dr*(cos(t0)+1)/2
+
+      local r11=r+dr*(cos(t1)+1)/2
+      local r12=r-dr*(cos(t1)+1)/2
+
+      local x0=r01*cos(s0)
+      local y0=r01*sin(s0)
+      local x1=r11*cos(s1)
+      local y1=r11*sin(s1)
+      local x2=r12*cos(s1)
+      local y2=r12*sin(s1)
+      local x3=r02*cos(s0)
+      local y3=r02*sin(s0)
+
+      local u0=j*obj.w*0.05
+      local u1=(j+1)*obj.w*0.05
+      local v2=obj.h
+
+      obj.drawpoly(x0,y0,0, x1,y1,0, x2,y2,0, x3,y3,0, u0,0, u1,0, u1,v2, u0,v2, 1)
+    end
+  end
+  end
+
+  obj.load("tempbuffer")
+
+  local id2 = extbuffer.freeid()
+  extbuffer.write(id2)  --save rainbow
+
+  extbuffer.read(id1)  --read BG
+  obj.copybuffer("tmp","obj")
+
+  extbuffer.read(id2)  --read rainbow
+  obj.setoption("blend",CustomFlareMode)
+
+  local alpi=obj.rand(0,100)/100+(1-blink)
+  if alpi>1 then alpi=1 end
+  alpha = alpi*alpha
+  if ovchk==1 then
+    obj.effect("Gradient","color",ovcol,"color2",ovcol,"blend",3)
+  end
+  obj.effect("Blur","Range",blur)
+  obj.effect("Emission","Strength",lt[1],"Diffusion",lt[2],"Threshold",lt[3],"vDiffuse",lt[4],"Fixed Size",1)
+
+  local w,h=obj.getpixel()
+  w=w*0.5
+  h=h*0.5
+
+  local wc=w*cos(rot) 
+  local ws=-w*sin(rot)
+  local hc=h*cos(rot) 
+  local hs=-h*sin(rot)
+
+  local x0=-wc-hs+ox
+  local y0= (ws-hc)*asp+oy
+  local x1= wc-hs+ox
+  local y1=(-ws-hc)*asp+oy
+  local x2= wc+hs+ox
+  local y2=(-ws+hc)*asp+oy
+  local x3=-wc+hs+ox
+  local y3= (ws+hc)*asp+oy
+
+  obj.drawpoly(x0,y0,oz, x1,y1,oz, x2,y2,oz, x3,y3,oz, 0,0,obj.w,0,obj.w,obj.h,0,obj.h , alpha)
+
+  obj.load("tempbuffer")
+  obj.setoption("blend",0)
+
+  extbuffer.clear(id1)
+  extbuffer.clear(id2)
+
+
+@LensTrack
+--track0:Density,1,100,10
+--track1:Size(%),0,50,15
+--track2:Strength,0,100,15
+--track3:Decay,0,100,40
+--dialog:Shape/fig,fig="Circle";SizePlus(%),local dsize=10;StrPlus(%),local dalp=0;BaseColor/chk,local basechk=1;Color/col,local col=0xccccff;ColorPlus(%),local dcol=0;Spin,local rot=0;SpinPlus,local drot=0;Blur,local blur=0;RandomSeed,local seed=0;
+
+  obj.copybuffer("tmp","obj")
+  obj.setoption("drawtarget","tempbuffer")
+  obj.setoption("blend",CustomFlareMode)
+  if basechk==1 then
+    col=CustomFlareColor
+  end
+
+  local size =CustomFlareW*obj.track1*0.01
+  local alp  =obj.track2*0.01
+  local gen  =obj.track3*0.01
+
+  obj.load("figure",fig,col,size)
+  obj.effect("Blur","Range",blur)
+
+  local countx=math.floor(CustomFlareW/600*obj.track0)
+  local county=math.floor(CustomFlareH/600*obj.track0)
+
+
+  gen=-200*gen/(CustomFlareW*CustomFlareW)
+
+local st=CustomFlareW/countx
+local dw=st*0.5
+
+  for i=0,countx do
+  for j=0,county do
+
+    if dcol>0 then
+      local h,s,v = HSV(col)
+      h=math.floor(h+math.floor(3.6*obj.rand(0,dcol,i,j+seed)))%360
+      col = HSV(h,s,v)
+      obj.load("figure",fig,col,size)
+      obj.effect("Blur","Range",blur)
+    end
+
+    local zoom=1-obj.rand(0,dsize,i,j+4000+seed)*0.01
+
+    local alpha =alp*obj.rand(100-dalp,100,i,j+6000+seed)*0.01
+
+    local ox=i*st-CustomFlareW*0.5+obj.rand(-dw,dw,i,j+1000+seed)
+    local oy=j*st-CustomFlareH*0.5+obj.rand(-dw,dw,i,j+2000+seed)
+
+    local rr=(ox-CustomFlareXX)*(ox-CustomFlareXX)+(oy-CustomFlareYY)*(oy-CustomFlareYY)
+
+    alpha=alpha*math.exp(gen*rr)
+    local rz=rot+obj.rand(-drot,drot,i,j+7000+seed)
+    obj.draw(ox,oy,0,zoom,alpha,0,0,rz)
+
+  end
+  end
+
+  obj.load("tempbuffer")
+  obj.setoption("blend",0)

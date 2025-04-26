@@ -1,0 +1,29 @@
+@TempSaveLoadEXT
+--track0:Dest,1,100,1,1
+require("extbuffer")
+
+obj.load("framebuffer")
+obj.effect()
+
+local id = math.floor(obj.track0)
+extbuffer.write(id)
+
+obj.alpha = 0
+
+
+@LoadImageEXT
+--track0:Src,1,100,1,1
+require("extbuffer")
+
+local id = math.floor(obj.track0)
+extbuffer.read(id)
+
+
+@ClearImageEXT
+--track0:Src,1,100,1,1
+require("extbuffer")
+
+local id = math.floor(obj.track0)
+extbuffer.clear(id)
+
+

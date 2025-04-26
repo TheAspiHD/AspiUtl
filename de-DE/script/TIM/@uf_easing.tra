@@ -1,0 +1,95 @@
+@easing_normal
+--param:1
+
+local E = require("easing_aviutl2020")
+local index,ratio = math.modf(obj.getpoint("index"))
+local st,ed = obj.getpoint(index),obj.getpoint(index+1)
+local et = obj.getpoint("param")
+local r = E.easing(et,ratio,st,ed-st,1)
+
+return r
+
+@easing_interpolation
+--param:1
+--speed:0,0
+
+local E = require("easing_aviutl2020")
+local total = obj.getpoint("time",obj.getpoint("num")-1)
+local index,ratio = 0,obj.getpoint("time")
+local et = obj.getpoint("param")
+local r = E.easing(et,ratio,0,obj.getpoint("num")-1,total)
+index,ratio = math.modf(r)
+local num = obj.getpoint("num")
+--イージンググラフの枠を飛び出す系の対策
+if(index<0)then
+  ratio=ratio+index
+  index=0
+end
+if(index>num-2)then
+  ratio=ratio+(index-(num-2))
+  index=num-2
+end
+
+local x0,y0,z0,x1,y1,z1,x2,y2,z2,x3,y3,z3
+if( index > 0 or obj.getpoint("accelerate") ) then
+	x0,y0,z0 = obj.getpoint(index-1,0,3)
+else
+	x0,y0,z0 = obj.getpoint(0,0,3)
+	x1,y1,z1 = obj.getpoint(1,0,3)
+	x2,y2,z2 = obj.getpoint(2,0,3)
+	x0 = x0+(x0-x1*2+x2)/2
+	y0 = y0+(y0-y1*2+y2)/2
+	z0 = z0+(z0-z1*2+y2)/2
+end
+if( index < num-2 or obj.getpoint("decelerate") ) then
+	x3,y3,z3 = obj.getpoint(index+2,0,3)
+else
+	x3,y3,z3 = obj.getpoint(num-1,0,3)
+	x2,y2,z2 = obj.getpoint(num-2,0,3)
+	x1,y1,z1 = obj.getpoint(num-3,0,3)
+	x3 = x3+(x3-x2*2+x1)/2
+	y3 = y3+(y3-y2*2+y1)/2
+	z3 = z3+(z3-z2*2+y1)/2
+end
+x1,y1,z1 = obj.getpoint(index  ,0,3)
+x2,y2,z2 = obj.getpoint(index+1,0,3)
+
+i,n = obj.getpoint("link")
+if( n < 3 ) then
+	z0,z1,z2 = 0,0,0;
+	if( n < 2 ) then
+		y0,y1,y2 = 0,0,0;
+	end
+end
+
+x0,y0,z0 = obj.interpolation(ratio,x0,y0,z0,x1,y1,z1,x2,y2,z2,x3,y3,z3)
+return x0;
+
+@easing_obj
+--param:1
+
+local E = require("easing_aviutl2020")
+local layer = obj.getpoint("param")
+local link_index, link_num = obj.getpoint("link")
+if( g_uf_easing~=nil ) then
+	if( g_uf_easing[layer]~=nil ) then
+		E.get_trackbar_section(g_uf_easing[layer].param)
+		if( link_num == 1 ) then
+			--座標以外
+			g_uf_easing[layer].name_list[1] = ""
+		else
+			--座標
+			g_uf_easing[layer].name_list[1] = "X"
+			g_uf_easing[layer].name_list[2] = "Y"
+			g_uf_easing[layer].name_list[3] = "Z"
+		end
+		
+		local easing,get_union_values = E.easing_concat(link_index, g_uf_easing[layer].param)
+		local index, t, index_raw, t_raw, st, ed = get_union_values(obj.getpoint("time"))
+		local result = easing(index, t)
+
+		--E.dump(string.format("tra link=%d,index=%d,t=%.16f,d=%.2f",link_index,index,t,result.d))
+		return result.d		
+	end
+end
+return 0

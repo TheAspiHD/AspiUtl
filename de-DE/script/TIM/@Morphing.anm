@@ -1,0 +1,498 @@
+@Set Morphing Point
+--track0:PtCount,1,14,3,1
+--track1:ImgNum,1,2,1,1
+--track2:PtSize,0,500,30,1
+--track3:FontSize,0,500,30,1
+--dialog:PointColor/col,local pcol=0xffffff;TextColor/col,local fcol=0x0;Coordinate,pos={-100,0,0,0,100,0};
+--check0:ShowPoint,0;
+
+Morphing_drawANC=function()
+		if Morphing_check0 then
+			local MO=Morphing_obj[Morphing_PC]
+			local MP=MO.pos
+			local N=#MP
+			obj.setoption("drawtarget","tempbuffer",MO.w,MO.h)
+			obj.draw()
+			obj.load("figure","Circle", Morphing_Pst.pcol, Morphing_Pst.psize)
+			for i=1,N do
+				obj.draw(MP[i].x,MP[i].y)
+			end
+			obj.setfont("",Morphing_Pst.fsize,0,Morphing_Pst.fcol)
+			for i=1,N do
+				obj.load("text",i)
+				obj.draw(MP[i].x,MP[i].y)
+			end
+			obj.load("tempbuffer")
+		end
+		Morphing_Pst=nil
+		Morphing_check0=nil
+		Morphing_PC=nil
+end
+
+	local AN=obj.track0
+	Morphing_PC=obj.track1
+	Morphing_check0=obj.check0
+
+	if Morphing_obj==nil then
+		Morphing_obj={}
+	end
+
+	Morphing_Pst={}
+	Morphing_Pst.pcol=pcol
+	Morphing_Pst.psize=obj.track2
+	Morphing_Pst.fcol=fcol
+	Morphing_Pst.fsize=obj.track3
+
+	local w,h = obj.getpixel()
+	local w2,h2=w*0.5,h*0.5
+	Morphing_obj[Morphing_PC]={}
+	local MO=Morphing_obj[Morphing_PC]
+	MO.layer=obj.layer
+	MO.w=w
+	MO.h=h
+	MO.pos={}
+	local MP=MO.pos
+	MP[1]={x=-w2,y=-h2}
+	MP[2]={x= w2,y=-h2}
+	MP[3]={x= w2,y= h2}
+	MP[4]={x=-w2,y= h2}
+
+	obj.setanchor("pos",AN)
+
+	local Np=#MP
+	for i=1,AN do
+		MP[Np+i]={}
+		MP[Np+i].x=pos[2*i-1]
+		MP[Np+i].y=pos[2*i]
+	end
+
+	if obj.getoption("script_name",1,true)~="Add Morphing Point@Morphing" then
+		Morphing_drawANC()
+		Morphing_drawANC=nil
+	end
+
+@Add Morphing Point
+--track0:ptCount,1,16,1,1
+--dialog:Coordinate,pos={0,0};
+	local AN=obj.track0
+	obj.setanchor("pos",AN)
+
+	local MP=Morphing_obj[Morphing_PC].pos
+	local Np=#MP
+	for i=1,AN do
+		MP[Np+i]={}
+		MP[Np+i].x=pos[2*i-1]
+		MP[Np+i].y=pos[2*i]
+	end
+
+	if obj.getoption("script_name",1,true)~="Add Morphing Point@Morphing" then
+		Morphing_drawANC()
+		Morphing_drawANC=nil
+	end
+
+@Morphing-Display
+--track0:Extent,0,100,50
+
+--track2:PtSize,0,500,30,1
+--track3:FontSize,0,500,30,1
+--dialog:LayerScript1/chk,local Lsc1=1;LayerScript2/chk,local Lsc2=1;ShowLine/chk,local lchk=1;LineColor/col,local Lcol=0xffffff;LineWidth,local Lw=3;Show Point/chk,local pchk=1;PointColor/col,local pcol=0xffffff;TextColor/col,local fcol=0x0;
+--check0:ShowGuide,0;
+
+(function()
+local Triangulation=function(Num)
+
+	local RepJudge=function(p1,p2,p3,q)
+
+		if (p1.x==q.x and p1.y==q.y) or (p2.x==q.x and p2.y==q.y) or (p3.x==q.x and p3.y==q.y) then
+			return false
+		end
+
+		local c = 2*( (p2.x-p1.x)*(p3.y-p1.y)-(p2.y-p1.y)*(p3.x-p1.x) )
+		local cx=( (p3.y-p1.y)*(p2.x^2-p1.x^2+p2.y^2-p1.y^2)+(p1.y-p2.y)*(p3.x^2-p1.x^2+p3.y^2-p1.y^2) )/c
+		local cy=( (p1.x-p3.x)*(p2.x^2-p1.x^2+p2.y^2-p1.y^2)+(p2.x-p1.x)*(p3.x^2-p1.x^2+p3.y^2-p1.y^2) )/c
+		if (p1.x-cx)^2+(p1.y-cy)^2>(q.x-cx)^2+(q.y-cy)^2 then
+			return true
+		else
+			return false
+		end
+	end
+
+	local function reTriangulation(MT,DMT,Ap)
+
+		local pN={}
+		pN[1]={DMT[1][1],DMT[1][2]}
+		pN[2]={DMT[1][2],DMT[1][3]}
+		pN[3]={DMT[1][3],DMT[1][1]}
+		for i=2,#DMT do
+			local pp={DMT[i][1],DMT[i][2],DMT[i][3],DMT[i][1]}
+			for k=1,3 do
+				local hantei=1
+				for j=1,#pN do
+					if pN[j][1]==pp[k+1] and pN[j][2]==pp[k] then
+						table.remove(pN,j)
+						hantei=0
+						break
+					end
+				end
+				if hantei==1 then
+					pN[#pN+1]={pp[k],pp[k+1]}
+				end
+			end
+		end
+		for i=1,#pN do
+			MT[#MT+1]={pN[i][1],pN[i][2],Ap}
+		end
+	end
+
+	local MPos=Morphing_obj[1].pos
+
+	local MT={}
+	MT[1]={1,2,4}
+	MT[2]={2,3,4}
+
+	for i=5,Num do
+		local DMT={}
+		local j=1
+		repeat
+			local p1,p2,p3=unpack(MT[j])
+			if RepJudge(MPos[p1], MPos[p2], MPos[p3], MPos[i]) then
+				DMT[#DMT+1]=MT[j]
+				MT[j]=MT[#MT]
+				MT[#MT]=nil
+			else
+				j=j+1
+			end
+		until j>#MT
+		reTriangulation(MT,DMT,i)
+	end
+
+	return MT
+end
+
+if Morphing_obj[1]==nil and Morphing_obj[2]==nil then
+	Morphing_obj=nil
+	return 0
+elseif Morphing_obj[1]==nil then
+	Morphing_obj[1]=Morphing_obj[2]
+elseif Morphing_obj[2]==nil then
+	Morphing_obj[2]=Morphing_obj[1]
+end
+
+local t=obj.track0*0.01
+
+local Lscript={}
+Lscript[1]=(Lsc1==1) and true
+Lscript[2]=(Lsc2==1) and true
+
+Morphing_obj[3]={}
+local MO1=Morphing_obj[1]
+local MO2=Morphing_obj[2]
+local MO3=Morphing_obj[3]
+
+local Num=math.min(#MO1.pos,#MO2.pos)
+local w=math.max(MO1.w,MO2.w)
+local h=math.max(MO1.h,MO2.h)
+
+local MT=Triangulation(Num)
+
+MO3.pos={}
+for i=1,Num do
+	MO3.pos[i]={}
+	MO3.pos[i].x=MO1.pos[i].x*(1-t)+MO2.pos[i].x*t
+	MO3.pos[i].y=MO1.pos[i].y*(1-t)+MO2.pos[i].y*t
+end
+
+for P=1,2 do
+	local MO=Morphing_obj[P]
+	obj.load("layer",MO.layer,Lscript[P])
+	obj.setoption("drawtarget","tempbuffer",w,h)
+	obj.setoption("blend","alpha_add")
+	local Mw=MO.w*0.5
+	local Mh=MO.h*0.5
+	for i=1,#MT do
+		local x1=MO3.pos[MT[i][1]].x
+		local y1=MO3.pos[MT[i][1]].y
+		local x2=MO3.pos[MT[i][2]].x
+		local y2=MO3.pos[MT[i][2]].y
+		local x3=MO3.pos[MT[i][3]].x
+		local y3=MO3.pos[MT[i][3]].y
+
+		local u1=MO.pos[MT[i][1]].x+Mw
+		local v1=MO.pos[MT[i][1]].y+Mh
+		local u2=MO.pos[MT[i][2]].x+Mw
+		local v2=MO.pos[MT[i][2]].y+Mh
+		local u3=MO.pos[MT[i][3]].x+Mw
+		local v3=MO.pos[MT[i][3]].y+Mh
+
+		obj.drawpoly(x1,y1,0, x1,y1,0, x2,y2,0, x3,y3,0, u1,v1, u1,v1, u2,v2, u3,v3)
+	end
+	obj.copybuffer("cache:img"..P,"tmp")
+end
+
+obj.setoption("drawtarget","tempbuffer",w,h)
+obj.copybuffer("obj","cache:img1")
+obj.setoption("blend",0)
+obj.draw(0,0,0,1,1-t)
+
+obj.copybuffer("obj","cache:img2")
+obj.setoption("blend","alpha_add")
+obj.draw(0,0,0,1,t)
+
+obj.setoption("blend",0)
+
+if lchk==1 and obj.check0 then
+	local d_line=function(x1,y1, x2,y2 ,wd)
+		local dx=x2-x1
+		local dy=y2-y1
+		local r=math.sqrt(dx*dx+dy*dy)
+		local sx= dy*wd*0.5/r
+		local sy=-dx*wd*0.5/r
+		obj.drawpoly(x2-sx,y2-sy,0, x1-sx,y1-sy,0, x1+sx,y1+sy,0, x2+sx,y2+sy,0)
+	end
+	obj.load("figure","Square",Lcol,math.min(w*0.5,h*0.5))
+	for i=1,#MT do
+		local x1=MO3.pos[MT[i][1]].x
+		local y1=MO3.pos[MT[i][1]].y
+		local x2=MO3.pos[MT[i][2]].x
+		local y2=MO3.pos[MT[i][2]].y
+		local x3=MO3.pos[MT[i][3]].x
+		local y3=MO3.pos[MT[i][3]].y
+		d_line(x1,y1, x2,y2 ,Lw)
+		d_line(x2,y2, x3,y3 ,Lw)
+		d_line(x3,y3, x1,y1 ,Lw)
+	end
+end
+
+if pchk==1 and obj.check0 then
+	obj.load("figure","Circle", pcol, obj.track2)
+	for i=1,Num do
+		obj.draw(MO3.pos[i].x,MO3.pos[i].y)
+	end
+
+	obj.setfont("",obj.track3,0,fcol)
+	for i=1,Num do
+		obj.load("text",i)
+		obj.draw(MO3.pos[i].x,MO3.pos[i].y)
+	end
+end
+
+obj.load("tempbuffer")
+Morphing_obj=nil
+end)()
+
+
+@Morphing(Outline)-Display
+--track0:Extent,0,100,50
+--track1:Size,0,1000,10
+--track2:PtCount,0,20000,120,1
+--track3:Offset,-2000,2000,0
+--dialog:ImageLayer prior transform,local inum=0;GetEffect/chk,local GE=1;Shape/fig,local fig="Circle";DotColor/col,local col=0xffffff;AutoDirection/chk,local td=0;SaveEXT/chk,local IE=0;
+
+Outlinemorphing_T=function(OT)
+	local makeOutline=function(ni,nj,ky,T,w,h,SF)
+		local r2=math.sqrt(2)
+		local dpx={-1, 0, 1, 1, 1, 0,-1,-1}
+		local dpy={ 1, 1, 1, 0,-1,-1,-1, 0}
+		local dky={r2,1,r2,1,r2,1,r2,1}
+		local w2,h2=w*0.5,h*0.5
+		local nn=0
+		local vold=0
+		local r,g,b,a
+		for j=0,h-1 do
+			for i=0,w-1 do
+				r,g,b,a = obj.getpixel(i,j,"rgb")
+				if a>T then
+					ni[0]=i
+					nj[0]=j
+					break 
+				end
+			end
+			if a>T then break end
+		end
+		ky[0]=0
+		local res
+		local vnew
+		local ti
+		local tj
+		repeat
+			res=0
+			for i=0,7 do
+				vnew=(vold+6+i)%8
+				ti=ni[nn]+dpx[vnew+1]
+				tj=nj[nn]+dpy[vnew+1]
+				if ti>=0 and ti<w and tj>=0 and tj<h then
+					r,g,b,a = obj.getpixel(ti,tj,"rgb")
+					if a>T then
+						nn=nn+1
+						ni[nn]=ti
+						nj[nn]=tj
+						ky[nn]=dky[vnew+1]
+						vold=vnew
+						if nn==1 then v0=vnew end
+						res=1
+						break 
+					end
+				end
+			end
+		until ( ni[nn-1]==ni[0] and nj[nn-1]==nj[0] and v0==vnew and nn>1) or res==0
+		nn=nn-1
+		local ALL=0
+		ky[-1]=0
+
+		if SF~=0 then
+			SF=math.floor(SF*(nn-1))
+			local ini={}
+			local inj={}
+			for i=0,nn do
+				ini[i],inj[i]=ni[i],nj[i]
+			end
+
+			for i=0,nn do
+				local ii=(i+SF)%nn
+				ni[i],nj[i]=ini[ii],inj[ii]
+			end
+		end
+
+		for i=0,nn do
+			ni[i],nj[i]=ni[i]-w2,nj[i]-h2
+			ALL=ALL+ky[i]
+			ky[i]=ky[i]+ky[i-1]
+		end
+		for i=1,nn do
+			ky[i]=ky[i]/ALL
+		end
+		return nn
+	end
+
+	local Adjus=function(px,py,ky,nn,XX,YY,N,OF)
+		OF=OF % 1
+		OF=OF % (1/N)
+		local k=0
+		for i=0,nn do
+			if k/N+OF<=ky[i] then
+				XX[k]=px[i]
+				YY[k]=py[i]
+				k=k+1
+			end
+		end
+	end
+
+	local S=OT.S or 50
+	local Cw=OT.Cw or 10
+	local N=OT.N or 120
+	local OF=OT.OF or 0
+	local T=OT.T or 128
+	local inum=OT.inum or 1
+	local fig=OT.fig or "Circle"
+	local col=OT.col or 0xffffff
+	local col2=OT.col2 or 0xffffff
+	local td=OT.td or 0
+	local Deg=OT.Deg or 0
+	local Lw=OT.Lw or 0
+	local SF=(OT.SF or 0)*0.01
+
+	local w1,h1= obj.getpixel()
+	local px1={}
+	local py1={}
+	local ky1={}
+	local nn1=makeOutline(px1,py1,ky1,T,w1,h1,0)
+
+	if IE==0 then
+		GE=GE==1 and true or false
+		obj.load("layer",inum,GE)
+	else
+		require("extbuffer")
+		extbuffer.read(inum)
+	end
+
+	local w2,h2 = obj.getpixel()
+	local px2={}
+	local py2={}
+	local ky2={}
+	local nn2=makeOutline(px2,py2,ky2,T,w2,h2,SF)
+
+	N=(N>nn1*0.5 and nn1*0.5) or N
+	N=(N>nn2*0.5 and nn2*0.5) or N
+	N=math.floor(N)
+
+	local XX1={}
+	local YY1={}
+	Adjus(px1,py1,ky1,nn1,XX1,YY1,N,OF)
+
+	local XX2={}
+	local YY2={}
+	Adjus(px2,py2,ky2,nn2,XX2,YY2,N,OF)
+
+	obj.setoption("drawtarget","tempbuffer",math.max(w1,w2)+2*Cw,math.max(h1,h2)+2*Cw)
+
+	for i=0,N-1 do
+		XX1[i]=XX1[i]*S+XX2[i]*(1-S)
+		YY1[i]=YY1[i]*S+YY2[i]*(1-S)
+	end
+	XX1[N]=XX1[0]
+	YY1[N]=YY1[0]
+	XX1[-1]=XX1[N-1]
+	YY1[-1]=YY1[N-1]
+	if Lw>0 then
+		local Lw2=Lw*0.5
+		obj.load("figure","Square",col2,math.min(w1,w2,h1,h2))
+		local x1,y1=XX1[0],YY1[0]
+		for i=0,N-1 do
+			local x2,y2=XX1[i+1],YY1[i+1]
+			local dx,dy=x2-x1,y2-y1
+			local dr=math.sqrt(dx*dx+dy*dy)
+			if dr>0 then
+				dx,dy=Lw2*dy/dr,-Lw2*dx/dr
+				obj.drawpoly(x1-dx,y1-dy,0, x2-dx,y2-dy,0, x2+dx,y2+dy,0, x1+dx,y1+dy,0)
+			end
+			x1,y1=x2,y2
+		end
+
+	end
+	obj.load("figure",fig,col,Cw)
+	if td==0 then
+		for i=0,N-1 do
+			obj.draw(XX1[i],YY1[i],0,1,1,0,0,Deg)
+		end
+	else
+		for i=0,N-1 do
+			local R=math.atan2(XX1[i+1]-XX1[i-1],YY1[i+1]-YY1[i-1])
+			obj.draw(XX1[i],YY1[i],0,1,1,0,0,Deg-R*180/math.pi-90)
+		end
+	end
+	obj.load("tempbuffer")
+end
+
+	Out_morph_T=Out_morph_T or {}
+	Out_morph_T.S=obj.track0*0.01
+	Out_morph_T.Cw=obj.track1
+	Out_morph_T.N=obj.track2
+	Out_morph_T.OF=-obj.track3*0.01
+	Out_morph_T.inum=inum or 1
+	Out_morph_T.fig=fig
+	Out_morph_T.col=col
+	Out_morph_T.td=td
+
+	if obj.getoption("script_name",1,true)~="Morphing(Outline)-Option@Morphing" then
+		Outlinemorphing_T(Out_morph_T)
+		Outlinemorphing_T=nil
+		Out_morph_T=nil
+	end
+
+@Morphing(Outline)-Option
+--track0:LineWd,0,1000,5
+--track1:<Spin,-3600,3600,0
+--track2:Threshold,0,254,128,1
+--track3:Drift,-2000,2000,0
+--dialog:LineColor/col,local col2=0xffffff;
+	Out_morph_T=Out_morph_T or {}
+	Out_morph_T.Lw=obj.track0
+	Out_morph_T.Deg=obj.track1
+	Out_morph_T.T=obj.track2
+	Out_morph_T.SF=obj.track3
+	Out_morph_T.col2=col2
+	if obj.getoption("script_name",1,true)~="Morphing(Outline)-Display@Morphing" then
+		Outlinemorphing_T(Out_morph_T)
+		Outlinemorphing_T=nil
+		Out_morph_T=nil
+	end

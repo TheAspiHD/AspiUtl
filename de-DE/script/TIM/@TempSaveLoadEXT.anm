@@ -1,0 +1,25 @@
+@TempSaveEXT
+--track0:Dest,1,100,1,1
+--check0:Hidden,0
+local id = math.floor(obj.track0)
+require("extbuffer")
+extbuffer.write(id)
+if(obj.check0)then
+	obj.alpha = 0
+end
+
+
+@ReadImageEXT
+--track0:Src,1,100,1,1
+local id = math.floor(obj.track0)
+require("extbuffer")
+extbuffer.read(id)
+
+
+@ClearImageEXT
+--track0:Src,1,100,1,1
+local id = math.floor(obj.track0)
+require("extbuffer")
+extbuffer.clear(id)
+
+

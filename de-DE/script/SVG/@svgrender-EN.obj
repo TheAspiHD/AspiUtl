@@ -1,0 +1,226 @@
+@Basic
+--track0:Scale%,1,50000,100, 1
+--track1:Width+,0,2000,0,1
+--track2:Height+,0,2000,0,1
+--file:
+
+require("svgrender")
+--obj.draw()
+
+  local canvasw, canvash
+  --local uefile= string.gsub(file,'\\\\','\\')
+  local fh= io.open(file,"r")
+  if(fh)
+  then
+    if(string.len(file)>1)
+    then
+      --local foundcanvas= false
+      for line in fh:lines()
+      do
+        local wp='width="(%d+)'
+        local hp='height="(%d+)'
+        local wmatch= tonumber(string.match(line,wp))
+        local hmatch= tonumber(string.match(line,hp))
+        local validw= wmatch and (wmatch>0)
+        local validh= hmatch and (hmatch>0)
+        if(not(canvasw) and validw) --if canvasw is not set and found a valid width, then set it
+        then
+          canvasw= (wmatch+obj.track1)*obj.track0/100
+        end
+
+        if(not(canvash) and validh) -- if canvash is not set and found a valid width, then set it
+        then
+          canvash= (hmatch+obj.track2)*obj.track0/100
+        end
+        if(canvasw and canvash) -- if both are set, stop the search
+        then
+          break
+        end 
+      end
+    end
+  end
+  fh:close()
+  if(canvasw)
+  then
+    --print(canvasw, canvash)
+    --prepare canvas
+    obj.load("figure","Square",0x999999, 1)
+    --local scale= 100
+    --local w= canvasw*scale/200
+    --local h= canvash*scale/200
+    --obj.drawpoly(-w,-h,0,w,-h,0,w,h,0,-w,h,0)
+    
+    obj.effect("Resize","X",canvasw,"Y",canvash,"Specified size by the number of dots",1)
+    local userdata,rw,rh= obj.getpixeldata()
+    --obj.setfont("MS UI Gothic",40,0,0xffffff)
+    --obj.load("text", svgrender.render(userdata, file, obj.track0))
+    
+    obj.putpixeldata(svgrender.render(userdata, file, rw, rh))
+
+  end
+  
+
+@AutoFit
+--track0:Scale%,1,50000,100, 1
+--track1:OfsX,-2000,2000,0,1
+--track2:OfsY,-2000,2000,0,1
+--file:
+
+require("svgrender")
+--obj.draw()
+
+  local canvasw, canvash, iwidth, iheight
+  local fh= io.open(file,"r")
+  if(fh)
+  then
+    fh:close()
+    if(string.len(file)>1)
+    then
+      iwidth, iheight= svgrender.getDimension(file) --size as defined by SVG file
+      local aspect= iwidth/iheight --aspect ratio
+      canvasw=iwidth*obj.track0/100
+      canvash= iheight*obj.track0/100
+      --try to draw a rectangle and resize to canvas size
+      obj.load("figure","Square",0x999999, 1)
+      obj.effect("Resize","X",canvasw,"Y",canvash,"Specified size by the number of dots",1)
+      --examine the resulting size
+      local user_data, tw, th=obj.getpixeldata()
+      --redraw canvas if clipping occurs
+     if((tw<canvasw)or(th<canvash))
+     then
+       if(aspect>1)
+       then
+         canvasw= tw
+         canvash= tw/aspect
+       else
+         canvash= th
+         canvasw= th*aspect
+       end
+       --redraw
+       --obj.draw()
+       obj.load("figure","Square",0x999999, 1)
+       obj.effect("Resize","X",canvasw,"Y",canvash,"Specified size by the number of dots",1)
+       user_data, tw, th=obj.getpixeldata() --refresh pixel data
+     end
+     --render
+     local scale=obj.track0
+     obj.putpixeldata(svgrender.renderpro(user_data, file, tw, th, obj.track1, obj.track2, scale, scale))
+    end
+  end
+  
+ 
+
+@Adv
+--track0:ScaleX,1,10000,100, 1
+--track1:cSide,3,2000,480, 1
+--track2:OfsX,-2000,2000,0,1
+--track3:OfsY,-2000,2000,0,1
+--file:
+
+require("svgrender")
+--obj.draw()
+
+  local canvasw, canvash
+
+  local fh= io.open(file,"r")
+  if(fh)
+  then
+    if(string.len(file)>1)
+    then
+      fh:close()
+      obj.load("figure","Square",0x999999, 1)
+      obj.effect("Resize","X",obj.track1,"Y",obj.track1,"Specified size by the number of dots",1)
+      local userdata,rw,rh= obj.getpixeldata()
+      obj.putpixeldata(svgrender.renderpro(userdata, file, rw, rh, obj.track2, obj.track3, obj.track0, obj.track0))
+    end
+  end
+
+@Seq
+--track0:Scale%,1,10000,100, 1
+--track1:cSide,3,2000,480, 1
+--track2:OfsX,-2000,2000,0,1
+--track3:OfsY,-2000,2000,0,1
+--file:
+local interval=1 --how many frames per svg file
+require("svgrender")
+--obj.draw()
+
+local function fileinfo(path)
+ local pattern="(%a):(.*\\)(.+)%.(%w+)"
+ local filefilter="(.-)(%d+)(.*)"
+ local info={}
+ local mresult={}
+ local va, vb, vc, vd = string.match(path, pattern)
+ info['drive']= va
+ info['folder']= string.sub(vb,1,-2)
+ info['filename']= vc
+ info['ext']= vd
+ local fileprefix, filenumber, filesuffix= string.match(vc,filefilter)
+ if(filenumber)
+ then
+   info['filenumber']= filenumber
+   info['prefix']= fileprefix
+   info['suffix']= filesuffix
+ end
+ 
+ local fh= io.open(path,"r")
+ if(fh)
+ then
+   info['exists']= true
+   io.close(fh)
+ else
+   info['exists']= false
+ end
+ return info
+end
+
+--determine if the filename has a valid seq no.
+--if there is one, convert the string to num, and find the file for current frame
+
+  local src_fi= fileinfo(file)
+  local render_filename=file
+  if(src_fi['exists']) --only do works if that file exists
+  then
+    if(src_fi['filenumber']) --if a number is found
+    then
+      --see if there is padding
+      local numlen= string.len(src_fi['filenumber'])
+      local firstchar= string.sub(src_fi['filenumber'],1,1)
+      --print(firstchar)
+      if((numlen>1) and (firstchar=='0')) --true when using padding
+      then
+        padformat= "%0"..numlen.."d"
+      end
+      --end checking padding
+      
+      --generate filename for current frame, if no such file, fall back to prev, until one is found
+      local found= false
+      local loopcount= 0
+      while (not found)
+      do
+      local fileid= tonumber(src_fi['filenumber'])
+      local currentframe= math.floor(obj.time*obj.framerate/interval)
+      local newfileid= fileid+currentframe-loopcount
+      local newnumstr
+      if(padformat)
+      then
+        newnumstr= string.format(padformat,newfileid) --for padding num
+      else
+        newnumstr= tostring(newfileid) --no padding
+      end
+      local newpath= src_fi['drive']..":"..src_fi['folder'].."\\"..src_fi['prefix']..newnumstr..src_fi['suffix'].."."..src_fi['ext']
+      local test_fi= fileinfo(newpath)
+      if(test_fi['exists'])
+      then
+        render_filename= newpath
+        found= true
+      end
+      loopcount= loopcount+1
+      end 
+    end
+  end
+  -- Call DLL and AviUtl functions here
+obj.load("figure","Square",0x999999, 1)
+obj.effect("Resize","X",obj.track1,"Y",obj.track1,"Specified size by the number of dots",1)
+local userdata,rw,rh= obj.getpixeldata()
+obj.putpixeldata(svgrender.renderpro(userdata, render_filename, rw, rh, obj.track2, obj.track3, obj.track0, obj.track0))

@@ -1,0 +1,9 @@
+AspiUtl License, Last updated: 20.4.2025
+
+By installing AspiUtl, you AGREE to these terms.
+
+You may install AviUtl-compatable-plugins.
+You may NOT resell AspiUtl. You may upload a modified version with the name "Modified AspiUtl by %name%".
+This program comes without warranty! Support is available via Discord and Github.
+You may NOT paywall your modified version of AspiUtl.
+You may use AspiUtl for commercial/professional use at no cost.

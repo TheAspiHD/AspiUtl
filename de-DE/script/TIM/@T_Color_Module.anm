@@ -1,0 +1,474 @@
+@Metal
+--track0:Intensity1,0,255,85,1
+--track1:Intensity2,0,255,170,1
+--track2:Grey,0,1,1,1
+	require("T_Color_Module")
+	local userdata,w,h=obj.getpixeldata()
+	T_Color_Module.metal(userdata,w,h,obj.track0,obj.track1,obj.track2)
+	obj.putpixeldata(userdata)
+
+@Metallic
+--track0:Satura1,0,255,64,1
+--track1:Satura2,0,255,178,1
+	local p3=math.floor(obj.track0)
+	local p1=math.floor(obj.track1)
+	p1,p3=math.max(p1,p3),math.min(p1,p3)
+	local p2=p1
+	local r1,g1,b1=RGB(0xffffff)
+	local r2,g2,b2=RGB(0xffffff)
+	local r3,g3,b3=RGB(0x2e1601)
+	require("T_Color_Module")
+	local userdata,w,h=obj.getpixeldata()
+	T_Color_Module.TritoneV2(userdata,w,h,r1,g1,b1,r2,g2,b2,r3,g3,b3,p1,p2,p3)
+	obj.putpixeldata(userdata)
+
+
+@Golden
+--track0:Satura1,0,255,0,1
+--track1:Centre,0,255,153,1
+--track2:Satura2,0,255,230,1
+	local p3=math.floor(obj.track0)
+	local p2=math.floor(obj.track1)
+	local p1=math.floor(obj.track2)
+	p1,p3=math.max(p1,p3),math.min(p1,p3)
+	local r1,g1,b1=RGB(0xffffff)
+	local r2,g2,b2=RGB(0xfd9501)
+	local r3,g3,b3=RGB(0x0c0500)
+	require("T_Color_Module")
+	local userdata,w,h=obj.getpixeldata()
+	T_Color_Module.TritoneV2(userdata,w,h,r1,g1,b1,r2,g2,b2,r3,g3,b3,p1,p2,p3)
+	obj.putpixeldata(userdata)
+
+@BridgeByPass
+--track0:Strength,0,100,100
+--track1:Chroma,0,100,70
+--track2:Gamma,1,1000,120
+
+	require("T_Color_Module")
+
+	local alp=obj.track0*0.01
+	local sai=alp*obj.track1+(1-alp)*100
+	local r=alp*100/obj.track2+1-alp
+
+	obj.copybuffer("tmp","obj")
+	obj.setoption("drawtarget","tempbuffer")
+	obj.setoption("blend",5)
+
+	obj.effect("Monochromatic")
+	obj.draw(0,0,0,1,alp)
+	obj.load("tempbuffer")
+	obj.setoption("blend",0)
+	obj.effect("Color compensation","Chroma",sai)
+
+	local userdata,w,h=obj.getpixeldata()
+	T_Color_Module.GammaCorrection(userdata,w,h,r,r,r)
+	obj.putpixeldata(userdata)
+
+@Neon
+--track0:LumCenter,-200,200,0
+--track1:LumRng,1,500,10
+--track2:Strength,0,500,100
+--track3:Blur,0,500,5
+
+	require("T_Color_Module")
+
+	local C=obj.track0/100+0.5
+	local B=obj.track1*0.01
+	local S=obj.track2*0.01
+
+	local ar=-S/(B*B)
+	local br=ar*(-2*C)
+	local cr=ar*(C*C-B*B)
+
+	obj.effect("Blur","Range",obj.track3,"Fixed Size",1)
+
+	local userdata,w,h=obj.getpixeldata()
+	T_Color_Module.SimToneCurve(userdata,w,h,0,ar,br,cr,0,ar,br,cr,0,ar,br,cr)
+	obj.putpixeldata(userdata)
+
+@BiColor
+--track0:Threshold,0,255,128,1
+--track1:Grey,0,1,1,1
+--dialog:Color1/col,local col1=0xffffff; Color2/col,local col2=0x0;
+--check0:Colorize,1;
+	require("T_Color_Module")
+	local userdata,w,h=obj.getpixeldata()
+	local r1,g1,b1=RGB(col1)
+	local r2,g2,b2=RGB(col2)
+	if obj.check0 then
+		T_Color_Module.binarization(userdata,w,h,obj.track0,obj.track1,r1,g1,b1,r2,g2,b2)
+	else
+		T_Color_Module.binarization(userdata,w,h,obj.track0,obj.track1)
+	end
+	obj.putpixeldata(userdata)
+
+@Grain
+--track0:Density,0,100,50
+--track1:Contrast,-400,400,100
+--track2:Seed,1,10000,1,1
+--track3:Method,1,3,1,1
+--dialog:Color1/col,local col1=0xffffff; Color2/col,local col2=0x0;
+--check0:Temporal variation,0;
+	local N=obj.track2
+	local r1,g1,b1=RGB(col1)
+	local r2,g2,b2=RGB(col2)
+	if obj.check0 then N=0 end
+	require("T_Color_Module")
+	local userdata,w,h=obj.getpixeldata()
+	T_Color_Module.grainy(userdata,w,h,obj.track0,obj.track1,obj.track3,N,r1,g1,b1,r2,g2,b2)
+	obj.putpixeldata(userdata)
+
+@Gamma correction
+--track0:Red,1,1000,100
+--track1:Green,1,1000,100
+--track2:Blue,1,1000,100
+--track3:ALL,1,1000,100
+	require("T_Color_Module")
+	local r,g,b
+	if obj.track3==100 then
+		r=100/obj.track0
+		g=100/obj.track1
+		b=100/obj.track2
+	else
+		r=100/obj.track3
+		g=r
+		b=r
+	end
+	local userdata,w,h=obj.getpixeldata()
+	T_Color_Module.GammaCorrection(userdata,w,h,r,g,b)
+	obj.putpixeldata(userdata)
+
+@Decolorize
+--track0:Amount,1,7,3,1
+	require("T_Color_Module")
+	local userdata,w,h=obj.getpixeldata()
+	T_Color_Module.ColorReduction(userdata,w,h,obj.track0)
+	obj.putpixeldata(userdata)
+
+@ExContrast
+--track0:Center,-255,255,0
+--track1:Strength,-200,200,100
+	require("T_Color_Module")
+	local userdata,w,h=obj.getpixeldata()
+	T_Color_Module.ExtendedContrast(userdata,w,h,obj.track0,obj.track1)
+	obj.putpixeldata(userdata)
+
+@Tone Curve
+--check0:Unify red curve,0;
+
+	local ar,br,cr,dr,ag,bg,cg,dg,ab,bb,cb,db
+
+	ar=T_ToneCurve_ar or 0
+	br=T_ToneCurve_br or 0
+	cr=T_ToneCurve_cr or 1
+	dr=T_ToneCurve_dr or 0
+
+	if obj.check0 then
+		ag,bg,cg,dg,ab,bb,cb,db=ar,br,cr,dr,ar,br,cr,dr
+	else
+		ag=T_ToneCurve_ag or 0
+		bg=T_ToneCurve_bg or 0
+		cg=T_ToneCurve_cg or 1
+		dg=T_ToneCurve_dg or 0
+		ab=T_ToneCurve_ab or 0
+		bb=T_ToneCurve_bb or 0
+		cb=T_ToneCurve_cb or 1
+		db=T_ToneCurve_db or 0
+	end
+
+	require("T_Color_Module")
+	local userdata,w,h=obj.getpixeldata()
+	T_Color_Module.SimToneCurve(userdata,w,h,ar,br,cr,dr,ag,bg,cg,dg,ab,bb,cb,db)
+	obj.putpixeldata(userdata)
+
+@Equalize
+	require("T_Color_Module")
+	local userdata,w,h=obj.getpixeldata()
+	T_Color_Module.equalize(userdata,w,h)
+	obj.putpixeldata(userdata)
+
+
+@Shadow-Highlight
+--track0:BlackCorr,-1000,1000,100
+--track1:WhiteCorr,-1000,1000,100
+--track2:Range,1,100,10,1
+	require("T_Color_Module")
+	local userdata,w,h=obj.getpixeldata()
+	T_Color_Module.Save_G_Image(userdata,w,h)
+	obj.effect("Blur","Range",obj.track2,"Fixed Size",1)
+	userdata,w,h=obj.getpixeldata()
+	T_Color_Module.Shadow_Highlight(userdata,w,h,-obj.track0/100,obj.track1/100)
+	obj.putpixeldata(userdata)
+	T_Color_Module.Free_G_Image()
+
+@Monochrome(T)
+--track0:R,0,255,0
+--track1:G,0,255,0
+--track2:B,0,255,0
+	require("T_Color_Module")
+	local userdata,w,h=obj.getpixeldata()
+	T_Color_Module.Monochromatic(userdata,w,h,obj.track0,obj.track1,obj.track2)
+	obj.putpixeldata(userdata)
+
+@Monochrome(T2)
+--track0:U,-500,500,0
+--track1:V,-500,500,0
+--track2:gamma,1,1000,100
+--check0:Show reference,0
+	require("T_Color_Module")
+
+	if obj.check0 then
+		local w,h=obj.getpixel()
+		obj.setoption("drawtarget","tempbuffer",w/3,h/3)
+		obj.draw(0,0,0,1/3)
+		obj.load("tempbuffer")
+		w,h=obj.getpixel()
+		obj.setoption("drawtarget","tempbuffer",3*w,3*h)
+		obj.draw(0,0,0)
+		for i=-1,1 do
+		for j=-1,1 do
+			if i~=0 or j~=0 then
+				obj.load("tempbuffer",w,h,w,h)
+				local userdata,w,h=obj.getpixeldata()
+				T_Color_Module.Monochromatic2(userdata,w,h,(obj.track0+i*10)*0.01,(obj.track1+j*10)*0.01,obj.track2*0.01)
+				obj.putpixeldata(userdata)
+				obj.draw(w*i,-h*j,0)
+			end
+		end
+		end
+		obj.load("tempbuffer",w,h,w,h)
+		userdata,w,h=obj.getpixeldata()
+		T_Color_Module.Monochromatic2(userdata,w,h,obj.track0*0.01,obj.track1*0.01,obj.track2*0.01)
+		obj.putpixeldata(userdata)
+		obj.draw()
+		obj.load("tempbuffer")
+	else
+		local userdata,w,h=obj.getpixeldata()
+		T_Color_Module.Monochromatic2(userdata,w,h,obj.track0*0.01,obj.track1*0.01,obj.track2*0.01)
+		obj.putpixeldata(userdata)
+	end
+
+
+@ColorChangeT
+--track0:HueRng,0,256,8
+--track1:ChromaRng,0,256,8
+--track2:LumAdj,0,100,100
+--track3:Boundary,1,256,2
+--dialog:Before change/col,local col1=0xffffff; After change/col,local col2=0xb5982c;
+	require("T_Color_Module")
+	local userdata,w,h=obj.getpixeldata()
+	local r1,g1,b1=RGB(col1)
+	local r2,g2,b2=RGB(col2)
+	T_Color_Module.ChangeToColor(userdata,w,h,r1,g1,b1,r2,g2,b2,obj.track0,obj.track1,obj.track2*0.01,obj.track3)
+	obj.putpixeldata(userdata)
+
+@Tritone
+--track0:Satura1,0,255,0,1
+--track1:Center,0,255,128,1
+--track2:Satura2,0,255,255,1
+--dialog:Ignore mid-tone/chk,local egm=0;Highlight/col,local col1=0xffffff; mid-tone/col,local col2=0xb5982c; Shadow/col,local col3=0x000000;
+--check0:New version,1
+	local p1,p2,p3
+	if obj.check0 then
+		p3=math.floor(obj.track0)
+		p2=math.floor(obj.track1)
+		p1=math.floor(obj.track2)
+		p1,p3=math.max(p1,p3),math.min(p1,p3)
+	else
+		p1,p2,p3=255,128,0
+	end
+	local r1,g1,b1=RGB(col1)
+	local r3,g3,b3=RGB(col3)
+	local r2,g2,b2
+
+	egm=egm or 0
+	if egm==0 then
+		r2,g2,b2=RGB(col2)
+	else
+		r2,g2,b2=math.floor((r1+r3)*0.5),math.floor((g1+g3)*0.5),math.floor((b1+b3)*0.5)
+	end
+
+	require("T_Color_Module")
+	local userdata,w,h=obj.getpixeldata()
+	T_Color_Module.TritoneV2(userdata,w,h,r1,g1,b1,r2,g2,b2,r3,g3,b3,p1,p2,p3)
+	obj.putpixeldata(userdata)
+
+
+@Colorama
+--track0:FShift,0,5000,0
+--track1:Cycle,0,20,1,0.01
+--track2:MaxColor,1,6,6,1
+--dialog:Color1/col,local col1=0xffffff;Color2/col,local col2=0xffff00;Color3/col,local col3=0x00ff00;Color4,local col4=0x00ffff;Color5,local col5=0x0000ff;Color6,local col6=0xff00ff;Sampling/col,local col7=0x000000;
+	local r1,g1,b1=RGB(col1 or 0xffffff)
+	local r2,g2,b2=RGB(col2 or 0xffff00)
+	local r3,g3,b3=RGB(col3 or 0x00ff00)
+	local r4,g4,b4=RGB(col4 or 0x00ffff)
+	local r5,g5,b5=RGB(col5 or 0x0000ff)
+	local r6,g6,b6=RGB(col6 or 0xff00ff)
+
+	local maxN=math.floor(obj.track2)
+	if maxN<1 then maxN=6 end
+
+	require("T_Color_Module")
+	local userdata,w,h=obj.getpixeldata()
+	T_Color_Module.Colorama(userdata,w,h,obj.track0/100,obj.track1,maxN,r1,g1,b1,r2,g2,b2,r3,g3,b3,r4,g4,b4,r5,g5,b5,r6,g6,b6)
+	obj.putpixeldata(userdata)
+
+@Posterize
+--track0:R-lv,2,256,8,1
+--track1:G-lv,2,256,8,1
+--track2:B-lv,2,256,8,1
+--check0:Link with R-lv,0
+	require("T_Color_Module")
+	local r,g,b
+	if obj.check0 then
+		r=obj.track0
+		g=r
+		b=r
+	else
+		r=obj.track0
+		g=obj.track1
+		b=obj.track2
+	end
+	local userdata,w,h=obj.getpixeldata()
+	T_Color_Module.Posterize(userdata,w,h,r,g,b)
+	obj.putpixeldata(userdata)
+
+@Min-Max
+--track0:MAX/MIN,1,2,1,1
+--track1:Channel,1,4,1,1
+--track2:Radius,1,500,10
+--dialog:Horizontal/chk,local HC=1;Vertical/chk,local VC=1;
+	require("T_Color_Module")
+	local userdata,w,h=obj.getpixeldata()
+	T_Color_Module.Minimax(userdata,w,h,obj.track0,obj.track2,obj.track1,HC,VC)
+	obj.putpixeldata(userdata)
+
+
+@ChannelMixer(SetR)
+--track0:R-R“,-300,300,100
+--track1:R-G“,-300,300,0
+--track2:R-B“,-300,300,0
+--track3:R-Const,-300,300,0
+	ChannelMixerSetObject=1
+	ChannelMixerRate={}
+	ChannelMixerRate[1]=obj.track0
+	ChannelMixerRate[2]=obj.track1
+	ChannelMixerRate[3]=obj.track2
+	ChannelMixerRate[4]=obj.track3
+
+@ChannelMixer(SetG)
+--track0:G-R“,-300,300,0
+--track1:G-G“,-300,300,100
+--track2:G-B“,-300,300,0
+--track3:G-Const,-300,300,0
+	ChannelMixerRate[5]=obj.track0
+	ChannelMixerRate[6]=obj.track1
+	ChannelMixerRate[7]=obj.track2
+	ChannelMixerRate[8]=obj.track3
+
+@ChannelMixer(Display+SetB)
+--track0:B-R“,-300,300,0
+--track1:B-G“,-300,300,0
+--track2:B-B“,-300,300,100
+--track3:B-Const,-300,300,0
+--dialog:R-R“,local RR=100;R-G“,local RG=0;R-B“,local RB=0;R-Const,local RC=0;G-R“,local GR=0;G-G“,local GG=100;G-B“,local GB=0;G-Const,local GC=0;B-R“,local BR=0;B-G“,local BG=0;B-B“,local BB=100;B-Const,local BC=0;
+
+	if ChannelMixerSetObject==1 then
+		RR=ChannelMixerRate[1]
+		RG=ChannelMixerRate[2]
+		RB=ChannelMixerRate[3]
+		RC=ChannelMixerRate[4]
+		GR=ChannelMixerRate[5]
+		GG=ChannelMixerRate[6]
+		GB=ChannelMixerRate[7]
+		GC=ChannelMixerRate[8]
+		BR=obj.track0
+		BG=obj.track1
+		BB=obj.track2
+		BC=obj.track3
+	end
+
+	require("T_Color_Module")
+	local userdata,w,h=obj.getpixeldata()
+	T_Color_Module.ChannelMixer(userdata,w,h,RR,RG,RB,RC,GR,GG,GB,GC,BR,BG,BB,BC)
+	obj.putpixeldata(userdata)
+	ChannelMixerSetObject=0
+
+@ChannelShift
+--track0:Alpha,0,6,0,1
+--track1:Red,0,6,1,1
+--track2:Green,0,6,2,1
+--track3:Blue,0,6,3,1
+--dialog:Show Channel/chk,local Dchk=0;Font size,local fs=34;
+	require("T_Color_Module")
+	local userdata,w,h=obj.getpixeldata()
+	T_Color_Module.ShiftChannels(userdata,w,h,obj.track0,obj.track1,obj.track2,obj.track3)
+	obj.putpixeldata(userdata)
+	if(obj.getinfo("saving")==false and Dchk==1) then
+		obj.setoption("drawtarget","tempbuffer",w,h)
+		obj.draw()
+		local text="Channel\n 0:Alpha\n 1:Red\n 2:Green\n 3:Blue\n 4:Hue\n 5:Chroma\n 6:Luma"
+		obj.setfont("",fs,1,0xffffff,0x000000)
+		obj.load("text",text)
+		obj.draw()
+		obj.load("tempbuffer")
+	end
+
+
+@CycleBitShift
+--track0:R8bit,-100,100,0,1
+--track1:G8bit,-100,100,0,1
+--track2:B8bit,-100,100,0,1
+--track3:24bit,-100,100,0,1
+--check0:Shift as 24bit,0
+	require("T_Color_Module")
+	local r,g,b
+	if obj.check0 then
+		r=math.floor(obj.track3)
+		g=r
+		b=r
+	else
+		r=math.floor(obj.track0)
+		g=math.floor(obj.track1)
+		b=math.floor(obj.track2)
+	end
+	local userdata,w,h=obj.getpixeldata()
+	T_Color_Module.CycleBitShift(userdata,w,h,r,g,b,((obj.check0 and 1)or 0))
+	obj.putpixeldata(userdata)
+
+
+@LeaveColor
+--track0:Amount,0,100,100
+--track1:ColorRng,0,500,50
+--track2:Edge,0,100,50
+--track3:Method,1,4,1,1
+--dialog:Color/col,local col=0xff0000;Show matching method/chk,local Dchk=0;Font size,local fs=34;
+	local r,g,b = RGB(col)
+	require("T_Color_Module")
+	local userdata,w,h=obj.getpixeldata()
+	T_Color_Module.LeaveColor(userdata,w,h,r,g,b,obj.track0,obj.track1,obj.track2,obj.track3)
+	obj.putpixeldata(userdata)
+	if(obj.getinfo("saving")==false and Dchk==1) then
+		obj.setoption("drawtarget","tempbuffer",w,h)
+		obj.draw()
+		local text="matching method\n 1:RGB\n 2:L*a*b*Hue\n 3:L*a*b*LumaAChroma\n 4:HSV Hue"
+		obj.setfont("",fs,1,0xffffff,0x000000)
+		obj.load("text",text)
+		obj.draw()
+		obj.load("tempbuffer")
+	end
+
+@FringeFix
+--track0:Method,0,2,1,1
+--track1:UpAlpha,0,255,255,1
+--track2:LowAlpha,0,255,0,1
+--dialog:BGcolor/col,local col=0xffffff;
+	local r,g,b = RGB(col)
+	require("T_Color_Module")
+	local userdata,w,h=obj.getpixeldata()
+	local amax,amin=math.max(obj.track1,obj.track2),math.min(obj.track1,obj.track2)
+	T_Color_Module.FringeFix(userdata,w,h,r,g,b,obj.track0,amax,amin)
+	obj.putpixeldata(userdata)
+
+

@@ -1,0 +1,788 @@
+@option
+--track0:E番号,-99999999,99999999,1,1
+--track1:連結点,-99,99,0,0.01
+--track2:反発回数,0,5,3,1
+--track3:反発強化,-100,400,0,1
+--dialog:E番号,local et_list={};連結点,local cp_list={};反発回数,local bn_list={};反発強化,local br_list={};前区間と結合,local un_list={};
+--check0:前区間と結合,0;
+
+local E = require("easing_aviutl2020")
+local NAME = "option@uf_easing"
+local FONT_SIZE = 16
+
+local S
+local SH
+local MAX_DRAW_FRAME
+
+local time = obj.time
+local frame = obj.frame
+
+local search_script = function(script_name, step, skip)
+	local count = 0
+	local no = step
+
+	repeat
+		local name = obj.getoption("script_name",no,skip)
+		if( name == script_name ) then
+			count = count + 1
+		end
+		no=no+step
+	until name=="" or math.abs(no)==100 --スクリプト以外が出てきたり、100までいったら抜ける
+	return count
+end
+
+--93さん
+local polyline = function(
+	p0, --点座標0
+	p1, --点座標1
+	width, --線幅(省略可)
+	color, --線色(省略可)
+	alpha --透明度(省略可)
+	)
+	local g=obj.getvalue
+	local w,h=0,0
+	if color then
+	obj.load("figure","四角形",color,1)
+	else
+	w,h=obj.getpixel()
+	end
+	alpha = alpha or 1
+	width = width or 1
+	local c = obj.getoption("camera_param")
+	local a = {p1[1]-p0[1], p1[2]-p0[2], p1[3]-p0[3]}
+	local b = {c.x-p0[1], c.y-p0[2], c.z-p0[3]}
+	local n = {a[2]*b[3]-a[3]*b[2],a[3]*b[1]-a[1]*b[3],a[1]*b[2]-a[2]*b[1]}
+	local l = math.sqrt(n[1]*n[1] + n[2]*n[2] + n[3]*n[3])
+	local nx,ny,nz = (n[1]/l)*width*.5, (n[2]/l)*width*.5 ,(n[3]/l)*width*.5
+	local x0,y0,z0 = p0[1]-nx,p0[2]-ny,p0[3]-nz
+	local x1,y1,z1 = p1[1]-nx,p1[2]-ny,p1[3]-nz
+	local x2,y2,z2 = p1[1]+nx,p1[2]+ny,p1[3]+nz
+	local x3,y3,z3 = p0[1]+nx,p0[2]+ny,p0[3]+nz
+	obj.drawpoly(x0,y0,z0, x1,y1,z1, x2,y2,z2, x3,y3,z3,0,0,w,0,w,h,0,h,alpha)
+end
+
+local polyline_rect = function(p0, p1, p2, p3, width, color, alpha, color2, alpha2)
+	if( color2 ~= nil ) then
+		--背景も描画
+		alpha2 = alpha2 or 1
+		obj.load("figure","四角形",color2,1)
+		obj.drawpoly(
+			p0[1],p0[2],p0[3],
+			p1[1],p1[2],p1[3],
+			p2[1],p2[2],p2[3],
+			p3[1],p3[2],p3[3],
+			0,0,
+			0,0,
+			0,0,
+			0,0,
+			alpha2
+		)
+	end
+	polyline(p0, p1, width, color, alpha)
+	polyline(p1, p2, width, color, alpha)
+	polyline(p2, p3, width, color, alpha)
+	polyline(p3, p0, width, color, alpha)
+end
+
+local continuous_plotter = function()
+	local pp
+	return function(p)
+		local p0 = pp
+		local p1 = p
+		if( pp ) then
+			local x = p1.x - p0.x
+			local y = p1.y - p0.y
+			local d = math.sqrt(x * x + y * y)
+			local step = 1/d
+			for t=0,1,step do
+				obj.draw(p0.x + t*x, p0.y + t*y)
+			end
+		end
+		pp = p1
+	end
+end
+
+local reverse_y = function(p)
+	return {x=p.x, y=-p.y}
+end
+
+local to_angle = function(rad)
+	return rad*180/math.pi
+end
+
+local plot_easing_data = function(bb, ee, data, canvas)
+	local plotter = continuous_plotter()
+	for tt = bb, ee do
+		local i,t = E.tt2it(tt, ACCURACY)
+		local p = {}
+		p.x = data[i].x*canvas.width + canvas.left
+		p.y = data[i].y*canvas.height + canvas.bottom
+		if( canvas.c == 0 ) then
+			p.y = canvas.zero_line
+		end
+		plotter(p)
+	end
+end
+
+local calc_point = function(p, canvas, ignore_scale)
+	local x,y = p.x*canvas.width+canvas.left, p.y*canvas.height+canvas.bottom
+	if( ignore_scale ) then
+		x = x/canvas.scale_x
+		y = y/canvas.scale_y
+	end
+	return x, y
+end
+local calc_difference = function(easing, index, cp1, cp2, t)
+	local result = easing(index, t, cp1, cp2)
+	return result.d1-result.d
+end
+
+local plot = function(plotter, p, canvas)
+	local x,y = calc_point(p, canvas)
+	if( plotter ) then
+		plotter({x=x,y=y})
+	else
+		obj.draw(x, y)
+	end
+	return x,y
+end
+
+local load_diff_color = function(target_a, a, tolerance)
+	local r1 = math.atan2(target_a, 1)
+	local r2 = math.atan2(a, 1)
+	local diff = r1-r2
+	if( math.abs(diff) < tolerance ) then
+		--差が許容角度未満なら緑
+		obj.load("figure","円",0x00ff00,S/50)
+	else
+		if( diff < 0 ) then
+			--差が許容角度以上あって、傾きが小さければ青
+			obj.load("figure","円",0x0000ff,S/50)
+		else
+			--差が許容角度以上あって、傾きが大きければ赤
+			obj.load("figure","円",0xff0000,S/50)
+		end
+	end
+end
+
+local draw_diff_color = function(reference_diff, diff, cp_p0, cp_p1, cp_old_x, args)
+	local _diff = reference_diff-diff
+	local _diff_coef = math.abs(_diff/reference_diff)
+	if( _diff_coef < args.tolerance ) then
+		--差が許容率未満なら緑
+		obj.load("figure","四角形",0x00ff00,S/50)
+	else
+		if( _diff >= 0 ) then
+			--差が許容率以上あって、基準より傾きが小さければ青
+			obj.load("figure","四角形",0x0000ff,S/50)
+		else
+			--差が許容率以上あって、基準より傾きが大きければ赤
+			obj.load("figure","四角形",0xff0000,S/50)
+		end
+	end
+	
+	local p0 = {x=0, y=cp_p0.y}
+	local p1 = {x=0, y=cp_p1.y}
+	cp_old_x = cp_old_x or 1
+	for i=cp_old_x,cp_p0.x,0.01 do
+		local plotter = continuous_plotter()
+		p0.x = i
+		p1.x = i
+		plot(plotter, p0, args.canvas_self)
+		plot(plotter, p1, args.canvas_self)
+	end
+	
+	return _diff_coef
+end
+
+local plot_easing_color = function(param, args)
+	if( args.canvas_self.section_frame == 0 ) then
+		return nil
+	end
+	local result
+	
+	local link_index = args.link_index
+	local index = args.index
+	local easing = args.easing
+	
+	local cp1, cp2 = param.cp_list[1], param.cp_list[2]
+	local verifi_list = {left_cp2={},right_cp1={},right_cp2={}}
+	local cp_p0,cp_p1,cp_old_x
+	local diff,diff_coef
+	
+	local d1,d2 = param.diff_list[1],param.diff_list[2]
+	local d1y,d2y
+	local graph_plotter = continuous_plotter()
+	local step = math.max(1, args.canvas_self.section_frame/MAX_DRAW_FRAME)
+	
+	for tt=0,args.canvas_self.section_frame,step do
+		local t = tt/args.canvas_self.section_frame
+		
+		--実際の縮尺の値
+		result = easing(index, t)
+		local p_stretch = {x=result.p.x, y=-result.p.y}
+		local p_origin = {x=result.p_origin.x, y=-result.p_origin.y}		
+		--描画フラグによって本来のイージング表示モードと、実際の縮尺に変更モードがある
+		local p = ( not args.graph_stretch ) and p_origin or p_stretch
+		--グラフ描画
+		obj.load("figure","円",0xffff00,S/75)
+		plot(graph_plotter, p, args.canvas_self)
+		
+		--cp1が自身の連結点、cp2が次の区画の連結点
+		--左側の場合はcp2がマイナスならば色分けが必要になる
+		--cp2を常にtにしながら取得した傾きとの色分けが必要
+		--右側の場合はcp1がプラス、またはcp2がマイナスならば色分けが必要になる
+		--cp1を常にtにしながら取得した傾きとの色分けと
+		--cp2を常にtにしながら取得した傾きとの色分けが必要
+		if( args.canvas_self.id == "left" ) then
+			--左側の場合、1個前のindexとなるのでcp2がマイナスの場合影響、その際はd2は相手の変化量
+			if( cp2 < 0 ) then
+				--local r = easing(index, "bottom", nil, (-0.99+0.99*result.p_origin.x))
+				diff = calc_difference(easing, index, nil, (-0.99+0.99*result.p_origin.x), "bottom")
+				cp_p0 = {x=p.x, y=-1.02}
+				cp_p1 = {x=p.x, y=-1.05}
+				d2y = -1.15
+				diff_coef = draw_diff_color(d2, diff, cp_p0, cp_p1, cp_old_x, args)
+				cp_old_x = p.x
+				
+				--verifi_list["left_cp2"][result.p_origin.x] = {diff, d2, d2-diff, diff_coef}
+			end
+		else
+			--右側の場合、cp1がプラスの場合とcp2がマイナスの場合に影響
+			if( cp1 >= 0 ) then
+				--local r = easing(index, "top", 0.99*result.p_origin.x, nil)
+				diff = calc_difference(easing, index, 0.99*result.p_origin.x, nil, "top")
+				cp_p0 = {x=p.x, y=0.02}
+				cp_p1 = {x=p.x, y=0.05}
+				d1y = 0.15
+				diff_coef = draw_diff_color(d1, diff, cp_p0, cp_p1, cp_old_x, args)
+				cp_old_x = p.x
+				
+				--verifi_list["right_cp1"][result.p_origin.x] = {diff, d1-diff, diff_coef}
+			end
+			if( cp2 < 0 ) then
+				--local r = easing(index, "bottom", nil, (-0.99+0.99*result.p_origin.x))
+				diff = calc_difference(easing, index, nil, (-0.99+0.99*result.p_origin.x), "bottom")
+				cp_p0 = {x=p.x, y=-1.02}
+				cp_p1 = {x=p.x, y=-1.05}
+				d2y = -1.15
+				diff_coef = draw_diff_color(d2, diff, cp_p0, cp_p1, cp_old_x, args)
+				cp_old_x = p.x
+				
+				--verifi_list["right_cp2"][result.p_origin.x] = {diff, d2-diff, diff_coef}
+			end
+		end		
+	end
+	
+	--変化量基準値の描画
+	if( d1 ~= nil and d1y ~= nil ) then
+		obj.load("text",string.format("%0.5f",d1))
+		local x,y = calc_point({x=0.5, y=d1y}, args.canvas_self)
+		obj.draw(x,y)
+	end
+	if( d2 ~= nil and d2y ~= nil ) then
+		obj.load("text",string.format("%0.5f",d2))
+		local x,y = calc_point({x=0.5, y=d2y}, args.canvas_self)
+		obj.draw(x,y)
+	end
+	
+	return verifi_list
+end
+
+local draw_canvas_rect = function(lb, rt, color1, alpha1, canvas)
+	local p0_x,p0_y = canvas.left, canvas.bottom --calc_point(p0, canvas)
+	local p1_x,p1_y = canvas.right, canvas.bottom --calc_point(p1, canvas)
+	local p2_x,p2_y = canvas.right, canvas.top --calc_point(p2, canvas)
+	local p3_x,p3_y = canvas.left, canvas.top --calc_point(p3, canvas)
+	
+	--SHの大きさのobjに描くので、ここではscale_x,yは無視する
+	local left,bottom = calc_point(lb, canvas, true)
+	local right,top = calc_point(rt, canvas, true)
+	
+	local sx, sy = math.abs(right-left), math.abs(top-bottom)
+	local size = ( sx > sy ) and sx or sy
+	local aspect = ( sx > sy ) and ((sy/sx)-1)*100 or (1-(sx/sy))*100
+	local ccx, ccy = canvas.cx/canvas.scale_x, canvas.cy/canvas.scale_y
+	local cx, cy = (left+right)*0.5-ccx, -((top+bottom)*0.5-ccy)
+
+	obj.load("figure","四角形",color1,SH)
+	local w,h=obj.getpixel()
+	
+	obj.effect("マスク", "X",cx,"Y",cy,"サイズ",size,"縦横比",aspect,"マスクの反転",1)
+	obj.drawpoly(
+		p0_x,p0_y,0,
+		p1_x,p1_y,0,
+		p2_x,p2_y,0,
+		p3_x,p3_y,0,
+		0,0,
+		w,0,
+		w,h,
+		0,h,
+		alpha1
+	)
+end
+
+local draw_index_bar = function(left_index, all_et_list, enable_time_list, x, y)
+	local total_time = 0
+	for i=1,#enable_time_list-1 do
+		total_time = total_time + enable_time_list[i]
+	end
+	
+	local scale_time = (S*0.75)/total_time
+	local x2 = x
+	for i=1,#enable_time_list do
+		local x1 = x2
+		x2 = x2 + enable_time_list[i]*scale_time
+		
+		local col = (i==left_index+1 or i==left_index+2) and 0x0000ff or 0xaaaaaa
+		col = (i > #all_et_list) and 0xff6666 or col
+		
+		polyline(
+			{x1+1,y,0},
+			{x2-1,y,0},
+			10,
+			col
+		)
+		polyline(
+			{x1-1,y,0},
+			{x1+1,y,0},
+			10,
+			0x00ff00
+		)
+		polyline(
+			{x2-1,y,0},
+			{x2+1,y,0},
+			10,
+			0x00ff00
+		)
+	end
+	x2 = x + obj.time*scale_time
+	polyline(
+		{x2-1,y,0},
+		{x2+1,y,0},
+		15,
+		0xff0000
+	)
+end
+
+
+
+--上に向かって無効のものも含めて同じスクリプトをカウント
+local count = search_script(NAME, -1, false)
+local n = count+1
+E.dump((n).."番目の区画設定")
+
+--有効である一番下のスクリプトかどうかを判断
+local is_last = search_script(NAME, 1, true) == 0
+
+--区間番号は存在するイージング対象パラメータに矯正
+local link_index
+if( #g_uf_easing[obj.layer].param.v_list[ g_uf_easing[obj.layer].link_index+1 ] > 0 ) then
+	--指定した対象パラメータが存在するならその値を使用
+	link_index = g_uf_easing[obj.layer].link_index
+else
+	--指定した対象パラメータが存在しないので存在するものを使用
+E.dump(g_uf_easing[obj.layer].param.v_list)
+	for i=1,#g_uf_easing[obj.layer].param.v_list do
+		if( #g_uf_easing[obj.layer].param.v_list[i] > 0 ) then
+			link_index = i-1
+			break
+		end
+	end
+end
+E.dump(g_uf_easing[obj.layer].link_index .. "->" .. (link_index or "nil"))
+
+S = g_uf_easing[obj.layer].S
+SH = S*0.5
+MAX_DRAW_FRAME = g_uf_easing[obj.layer].MAX_DRAW_FRAME
+local P_VIEW = g_uf_easing[obj.layer].P_VIEW
+local G_VIEW = g_uf_easing[obj.layer].G_VIEW
+local section = g_uf_easing[obj.layer].section
+local section_raw = g_uf_easing[obj.layer].section
+local tolerance = g_uf_easing[obj.layer].tolerance
+local graph_type = g_uf_easing[obj.layer].graph_type
+local graph_stretch = (graph_type == 1) or (graph_type == 3)
+local graph_mag_ignore = (graph_type == 0) or (graph_type == 1)
+local index, ratio, index_raw, ratio_raw, totalframe, enable_time_list, enable_v_list
+
+--固定パラメータを渡す
+et_list = et_list or {}
+if( #et_list==0 ) then
+	et_list = {obj.track0, obj.track0, obj.track0}
+end
+cp_list = cp_list or {}
+if( #cp_list==0 ) then
+	cp_list = {obj.track1, obj.track1, obj.track1}
+end
+bn_list = bn_list or {}
+if( #bn_list==0 ) then
+	bn_list = {obj.track2, obj.track2, obj.track2}
+end
+br_list = br_list or {}
+if( #br_list==0 ) then
+	br_list = {obj.track3, obj.track3, obj.track3}
+end
+un_list = un_list or {}
+if( #un_list==0 ) then
+	un_list = {obj.check0 and 1 or 0, obj.check0 and 1 or 0, obj.check0 and 1 or 0}
+end
+
+g_uf_easing[obj.layer].param.et_list[n] = et_list
+g_uf_easing[obj.layer].param.cp_list[n] = cp_list
+g_uf_easing[obj.layer].param.bn_list[n] = bn_list
+g_uf_easing[obj.layer].param.br_list[n] = br_list
+g_uf_easing[obj.layer].param.un_list[n] = un_list
+
+if( is_last ) then
+	--これが最後のスクリプトで、それ以降の配列が存在すればそれは残骸なので削除
+	for i=n+1,#g_uf_easing[obj.layer].param.et_list do
+		g_uf_easing[obj.layer].param.et_list[i] = nil
+		g_uf_easing[obj.layer].param.cp_list[i] = nil
+		g_uf_easing[obj.layer].param.bn_list[i] = nil
+		g_uf_easing[obj.layer].param.br_list[i] = nil
+		g_uf_easing[obj.layer].param.un_list[i] = nil
+	end
+	--表示の必要がないならここで終わり
+	if( G_VIEW ~= 1 ) then
+		return
+	end
+	
+	obj.setfont("メイリオ", FONT_SIZE, 0, 0xffffff, 0xffffff)
+	if( link_index == nil ) then
+		local str =  "F5キーを押して再読み込みしてください\n\n"
+		str = str .. "再読み込みしてもこのメッセージが表示される場合は、\n"
+		str = str .. "　１．easing_obj@uf_easingを設定したオブジェクトが\n"
+		str = str .. "　　　下位レイヤーに存在するか？\n"
+		str = str .. "　２．その設定値と、このカスタムオブジェクトのある\n"
+		str = str .. "　　　レイヤー番号が合っているか？\n"
+		str = str .. "を確認してください\n"
+
+		obj.load("text",str)
+		return
+	end
+	
+	local easing,get_union_values = E.easing_concat(link_index, g_uf_easing[obj.layer].param)
+	totalframe = E.to_frame(g_uf_easing[obj.layer].param.time_list[#g_uf_easing[obj.layer].param.time_list], obj.framerate)
+	index, ratio, index_raw, ratio_raw, st, ed, enable_time_list, enable_v_list = get_union_values(obj.time)
+	index, ratio = E.adjust_index_last_frame(index, ratio, frame, totalframe)
+	index_raw, ratio_raw = E.adjust_index_last_frame(index_raw, ratio_raw, frame, totalframe)
+	if( section == 0 ) then
+		--自動判別
+		section = index+1
+		--無効領域を考慮しない本来のセクション値
+		section_raw = index_raw+1
+	end
+	
+	--スクリプト個数チェック
+	if( #g_uf_easing[obj.layer].param.et_list < section_raw ) then
+		local str =  string.format("区間番号%dを設定するためには\n%sが%d個必要です",section_raw,NAME,section_raw)
+		obj.load("text",str)
+		return
+	end
+	
+	--処理本体
+	local left_index, right_index, now_index
+	if( section == 1 or section == 2 ) then
+		--1区画目と2区画目は画面は同一
+		left_index = 0
+		right_index = 1
+	else
+		--3区画目以降
+		left_index = section-2
+		right_index = section-1
+	end
+	
+	local param = easing(right_index)	--グラフ描画に各種情報が必要なので、paramを取得するために呼ぶ
+	
+	local time_list = param.time_list
+	local v_list = param.v_list
+	
+	local scale_y, scale_x = param.scale_list["y"][1], param.scale_list["x"][1]
+	local scale_t1, scale_t2 = param.scale_list["t"][1], param.scale_list["t"][2]
+	local width_list = { SH*scale_x, SH }
+	local height_list = { SH*scale_y, SH }
+	
+	--これらの値から領域を確保
+	local buffer_width = S
+	local buffer_height = S
+	local buffer_margin = 64 + g_uf_easing[obj.layer].margin
+	obj.setoption("drawtarget","tempbuffer" ,buffer_width+buffer_margin*2,buffer_height+buffer_margin*2)
+	
+	--キャンバス設定
+	local canvas_list = {
+		{
+			id = "left",
+			width=width_list[1],
+			height=height_list[1],
+			left=-width_list[1],
+			right=0,
+			top=0,
+			bottom=height_list[1],
+			cx = -width_list[1]*0.5,
+			cy =  height_list[1]*0.5,
+			frame_cx = -SH*0.5,
+			frame_cy = SH*0.5,
+			scale_x = scale_x,
+			scale_y = scale_y,
+			scale_t = scale_t1,
+			c = v_list[2] - v_list[1],
+			zero_line = 0,
+			section_frame = E.to_frame(time_list[1], obj.framerate),
+			section_time = time_list[1],
+			et = param.et_list[1],
+		},
+		{
+			id = "right",
+			width=width_list[2],
+			height=height_list[2],
+			left=0,
+			right=width_list[2],
+			top=-height_list[2],
+			bottom=0,
+			cx =  width_list[2]*0.5,
+			cy = -height_list[2]*0.5,
+			frame_cx = SH*0.5,
+			frame_cy = -SH*0.5,
+			scale_x = 1,
+			scale_y = 1,
+			scale_t = scale_t2,
+			c = v_list[3] - v_list[2],
+			zero_line = 0,
+			section_frame = E.to_frame(time_list[2], obj.framerate),
+			section_time = time_list[2],
+			et = param.et_list[2],
+		},
+	}
+	--倍率無視したグラフ
+	if( graph_mag_ignore ) then
+		canvas_list[1] = {
+			id = "left",
+			width=SH,
+			height=SH,
+			left=-SH,
+			right=0,
+			top=0,
+			bottom=SH,
+			cx = -SH*0.5,
+			cy =  SH*0.5,
+			frame_cx = -SH*0.5,
+			frame_cy = SH*0.5,
+			scale_x = 1,
+			scale_y = 1,
+			scale_t = scale_t1,
+			c = v_list[2] - v_list[1],
+			zero_line = 0,
+			section_frame = E.to_frame(time_list[1], obj.framerate),
+			section_time = time_list[1],
+			et = param.et_list[1],
+		}
+	end
+	
+	--枠を描画
+	local space = 2	
+	polyline_rect( 
+		{-SH-space,-SH-space,0},
+		{ SH+space,-SH-space,0},
+		{ SH+space, SH+space,0},
+		{-SH-space, SH+space,0},
+		1,
+		0xffffff,
+		1,
+		0x003311,
+		1
+	)
+	--縦
+	polyline( 
+		{ 0, -SH-space,0},
+		{ 0,  SH+space,0},
+		1,
+		0xffffff
+	)
+	--縦補助
+	if( canvas_list[1].width ~= SH ) then
+		polyline( 
+			{ -canvas_list[1].width, -SH,0},
+			{ -canvas_list[1].width,  SH,0},
+			1,
+			0x226622
+		)
+	end
+	--横
+	polyline( 
+		{-SH-space,0,0},
+		{ SH+space,0,0},
+		1,
+		0xffffff
+	)
+	--横補助
+	if( canvas_list[1].height ~= SH ) then
+		polyline( 
+		{-SH-space,canvas_list[1].height,0},
+		{ SH+space,canvas_list[1].height,0},
+			1,
+			0x226622
+		)
+	end
+	--補助イージング番号
+	if( P_VIEW == 1 ) then
+		for i=1,2 do
+			if( canvas_list[i].section_time > 0 ) then
+				local et1, et2, ratio_f = E.analyze_fusion(canvas_list[i].et)
+				local draw_et = string.format("<s"..(FONT_SIZE*5)..",,I>%2d", et1)
+				local draw_percent
+				if( et2 ~= nil ) then
+					if( math.abs(et1) == 1 ) then
+						--イージング微調整
+						draw_et = string.format("<s"..(FONT_SIZE*5)..",,I>%2d", et2)
+					else
+						--イージング合成
+						draw_et = string.format("<s"..(FONT_SIZE*2.5)..",,I>%2d+<s"..(FONT_SIZE*2.5)..",,I>%2d", et1, et2)
+					end
+					draw_percent = string.format("%2d%%", ratio_f)
+				end
+				
+				obj.setfont("Times New Roman", FONT_SIZE, 4,0xafafaf,0xffffff)
+				obj.load("text",draw_et)
+				obj.draw(canvas_list[i].frame_cx, canvas_list[i].frame_cy, 0, 1.5, 0.7)
+				if( draw_percent ) then
+					obj.setfont("Times New Roman", FONT_SIZE*1.5, 0, 0xffffff, 0xffffff)
+					obj.load("text",draw_percent)
+					obj.draw(canvas_list[i].frame_cx, canvas_list[i].frame_cy+obj.h*2, 0, 1.5, 0.7)
+				end
+			end
+		end
+	end
+	
+	--連結点がマイナスになる場合は左側のグラフも右側のグラフも
+	--CP1がプラス（右側色分け）かマイナス（左側色分け）か、
+	--CP2がプラス（何もしない）かマイナス（右側色分け）か
+	--によって場合分けをする必要がある、面倒そうなのでマイナスは保留
+	
+	--グラフ描画
+	obj.setfont("メイリオ", FONT_SIZE, 0, 0xffffff, 0xffffff)
+	local verifi_list
+	local index_list = {left_index, right_index}
+	for i=1,2 do
+		local param = easing(index_list[i])
+		local cp1, cp2 = param.cp_list[1],param.cp_list[2]
+		if( cp1 < 0 and cp2 >= 0 ) then
+			--CP1がマイナスかつ、CP2がプラスならば色分けなし
+			obj.load("figure","円",0xffff00,S/75)
+			local plotter = continuous_plotter()
+			for tt=0,canvas_list[i].section_frame do
+				local t = tt/canvas_list[i].section_frame
+				local result = easing(index_list[i], t)
+				plot(plotter, reverse_y(result.p), canvas_list[i])
+			end
+		else
+			--それ以外なら色分けあり
+			verifi_list = plot_easing_color(param,{
+				easing = easing,
+				graph_stretch = graph_stretch,
+				tolerance = tolerance,
+				link_index = link_index,
+				index = index_list[i],
+				canvas_self = canvas_list[i],
+				canvas_buddy = canvas_list[(i%2+1)],
+			})
+			if( not graph_stretch ) then
+				-- 無効領域の描画
+				local pcp1 = param.pcp_list[1]
+				local pcp2 = param.pcp_list[2]
+				if( cp1 < 0 ) then
+					--cp1がマイナスの場合のpcp1は前のグラフのものなので
+					pcp1 = {x=0,y=0}
+				end
+				draw_canvas_rect(
+					reverse_y(pcp1),
+					reverse_y(pcp2),
+					0xffffff,
+					0.3,
+					canvas_list[i]
+				)
+			end
+		end	
+	end
+
+	--現在地描画
+	obj.load("figure","円",0xffffff,S/30)
+	local result = easing(index, ratio)
+	local p = ( not graph_stretch ) and result.p_origin or result.p
+	--実際の値を取得
+	if( left_index == index ) then
+		--左に書かれているものと一致しているなら左側に現在地表示
+		plot(nil, reverse_y(p), canvas_list[1])
+	end
+	if( right_index == index ) then
+		--右に書かれているものと一致しているなら右側に現在地表示
+		plot(nil, reverse_y(p), canvas_list[2])
+	end
+	
+	--表示
+	local font_space = 5
+	local line_height = FONT_SIZE + font_space
+	local left = -(buffer_width*0.5+buffer_margin)
+	local top = -(buffer_height*0.5+buffer_margin)
+	obj.setfont("メイリオ", FONT_SIZE*0.9)
+
+	--補助
+	if( P_VIEW == 1 ) then
+		draw_index_bar(
+			left_index, 
+			g_uf_easing[obj.layer].param.et_list, 
+			enable_time_list,
+			-SH*0.25,
+			 SH +45
+		)
+		
+		if( frame == totalframe ) then
+			obj.load("text",string.format("値:%0.2f",result.d))
+			obj.draw(left+obj.w*0.5, obj.h*0.5+SH + line_height*1)
+		else
+			obj.load("text",string.format("値:%0.2f → %0.2f",result.d,result.d1))
+			obj.draw(left+obj.w*0.5, obj.h*0.5+SH + line_height*1)
+			obj.load("text",string.format("変化量:%0.5f",result.d1-result.d))
+			obj.draw(left+obj.w*0.5, obj.h*0.5+SH + line_height*2)
+		end
+			
+		obj.load("text",string.format("緑：許容範囲内"))
+		obj.draw(left+obj.w*0.5, top + obj.h*0.5 + line_height*0)
+		obj.load("text",string.format("青：値＋ or 時間－"))
+		obj.draw(left+obj.w*0.5, top + obj.h*0.5 + line_height*1)
+		obj.load("text",string.format("　（相手区間の　値－ or 時間＋）"))
+		obj.draw(left+obj.w*0.5, top + obj.h*0.5 + line_height*2)
+		obj.load("text",string.format("赤：値－ or 時間＋"))
+		obj.draw(left+obj.w*0.5, top + obj.h*0.5 + line_height*3)
+		obj.load("text",string.format("　（相手区間の　値＋ or 時間－）"))
+		obj.draw(left+obj.w*0.5, top + obj.h*0.5 + line_height*4)
+	end
+	
+	--値
+	if( canvas_list[1].v ~= 0 ) then
+		obj.load("text",string.format("%d",v_list[1]))
+		local vy = math.max(line_height, -obj.h*0.5 + canvas_list[1].height)					
+		obj.draw(obj.w*0.5 + SH + font_space,vy)
+	end
+	obj.load("text",string.format("%d",v_list[2]))
+	obj.draw(obj.w*0.5 + SH + font_space,    -obj.h*0.5 + 0)
+	if( canvas_list[2].v ~= 0 ) then
+		obj.load("text",string.format("%d",v_list[3]))
+		obj.draw(obj.w*0.5 + SH + font_space,-obj.h*0.5 - SH)
+	end
+	obj.load("text",string.format("%s値",g_uf_easing[obj.layer].name_list[link_index+1]))
+	obj.draw(obj.w*0.5+SH+font_space,        -obj.h*0.5 - SH - line_height*1)
+		
+	--時間
+	local tx = math.min(-45, -canvas_list[1].width)
+	obj.load("text",string.format("%0.2f",0))
+	obj.draw(tx, obj.h*0.5 + SH)
+	obj.load("text",string.format("%0.2f",time_list[1]))
+	obj.draw(0             , obj.h*0.5 + SH)
+	obj.load("text",string.format("%0.2f(秒)",time_list[1]+time_list[2]))
+	obj.draw(SH , obj.h*0.5 + SH)
+	
+	obj.load("tempbuffer")
+ 
+end
+
+

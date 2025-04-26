@@ -1,0 +1,48 @@
+--param:1
+--[[
+‹O“¹’²®‚s.obj‚Ì‹O“¹”Ô†‚Æ
+İ’è‚Ì[]‚Ì’†‚Ì”š‚ğ‘µ‚¦‚é
+--]]
+
+local Orbit=function(t,x1,y1,x2,y2)
+	local s=1-t
+	x1=(3*s*s*x1+(3*s*x2+t)*t)*t
+	y1=(3*s*s*y1+(3*s*y2+t)*t)*t
+	return x1,y1
+end
+
+local index,ratio=math.modf(obj.getpoint("index"))
+local s=obj.getpoint(index);
+local e=obj.getpoint(index+1);
+local n=obj.getpoint("param")
+local L=obj.getpoint("link")
+
+local q1x=OrbitNumber[n][1]
+local q1y=OrbitNumber[n][2]
+local q2x=OrbitNumber[n][3]
+local q2y=OrbitNumber[n][4]
+local obt=OrbitNumber[n][5]
+
+local t1=0
+local t2=1
+for i=1,10 do
+	local tm=(t1+t2)*0.5
+	local xm,y=Orbit(tm,q1x,q1y,q2x,q2y)
+	if ratio<xm then
+		t2=tm
+	else
+		t1=tm
+	end 
+end
+
+x1,ratio=Orbit((t1+t2)*0.5,q1x,q1y,q2x,q2y)
+
+if obt==0 then
+	return s + (e-s)*ratio;
+else
+	if obt==L+1 then
+		return s + (e-s)*ratio
+	else
+		return obj.getpoint("default")
+	end
+end

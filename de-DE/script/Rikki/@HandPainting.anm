@@ -1,0 +1,2313 @@
+@Pen
+--track0:Size,1,500,50,1
+--check0:Eraser,0
+--dialog:Color/col,local c=0xffffff;Interpolate,local ho=nil;Shape/fig,local figu="Circle";Trace/chk,local mosha=0;CheckTrace/chk,moshas=0;AdditiveTrace/chk,OEKAKI_add=0;ConfirmAddition/chk,OEKAKI_ok=0
+require("oekakifunc")
+--ctrl=any_key.board(0x11,0x10,0x12)
+ctrl=oekakifunc.state()
+local get=obj.getvalue
+local type = function(v)
+local lay=tostring("layer"..obj.layer+1)
+local v = v
+local s = tostring(v)
+if(string.find(s, "table:"))then return "table" end
+return "number"
+end
+local size=obj.track0*get("zoom")*0.01
+if ho==nil then
+ho=size
+end
+if c==nil then
+c=0xffffff
+end
+if figu=="" then
+figu="Circle"
+end
+if OEKAKI_add==0 then
+OEKAKI_add=false
+else
+OEKAKI_add=true
+end
+if OEKAKI_ok==0 then
+OEKAKI_ok=false
+else
+OEKAKI_ok=true
+end
+if type(OEKAKI)~="table" then
+OEKAKI={}
+--OEKAKI[1]={c,size,figu}
+end
+if type(reDO)~="table" then
+reDO={}
+end
+local lay=tostring(obj.layer+1)
+lay="layer"..lay
+if not OEKAKI_add then
+OEKAKI2=nil
+reDO2=nil
+if not obj.check0 then
+OEKAKI[#OEKAKI+1]={c,size,figu}
+if 8<#reDO then
+for i=1,#reDO-8 do
+table.remove(reDO,1)
+end
+end
+if ctrl[2] and ctrl[3] and 0<#reDO then
+OEKAKI={}
+for i=1,#reDO[#reDO]-1 do
+OEKAKI[i]=reDO[#reDO][i]
+end
+table.remove(reDO,#reDO)
+end
+
+
+if not ctrl[1] then
+OEKAKIf=false
+redof=false
+end
+if ctrl[1] and not ctrl[2] then
+if not redof then
+reDO[#reDO+1]={}
+for i=1,#OEKAKI do
+reDO[#reDO][i]={}
+for j=1,#OEKAKI[i] do
+reDO[#reDO][i][j]=OEKAKI[i][j]
+end
+end
+redof=true
+end
+if not OEKAKIf then
+OEKAKI[#OEKAKI][4]=get("x")-get(lay..".x")
+OEKAKI[#OEKAKI][5]=get("y")-get(lay..".y")
+OEKAKIf=true
+if mosha==1 then
+obj.load("framebuffer")
+local mc=obj.getpixel(get("x")+obj.screen_w*0.5,get("y")+obj.screen_h*0.5,"col")
+OEKAKI[#OEKAKI][1]=mc
+end
+else
+local xx=get("x")-get(lay..".x")
+local yy=get("y")-get(lay..".y")
+if ((OEKAKI[#OEKAKI-1][4]-xx)*(OEKAKI[#OEKAKI-1][4]-xx)+(OEKAKI[#OEKAKI-1][5]-yy)*(OEKAKI[#OEKAKI-1][5]-yy))^0.5>ho*0.5 then
+local l=((OEKAKI[#OEKAKI-1][4]-xx)*(OEKAKI[#OEKAKI-1][4]-xx)+(OEKAKI[#OEKAKI-1][5]-yy)*(OEKAKI[#OEKAKI-1][5]-yy))^0.5
+local ln=math.floor(l/(ho*0.5))
+local nn=#OEKAKI
+for i=1,ln do
+OEKAKI[nn-1+i]={OEKAKI[nn][1],OEKAKI[nn][2],OEKAKI[nn][3],OEKAKI[nn-1][4]*(1-i/ln)+xx*i/ln,OEKAKI[nn-1][5]*(1-i/ln)+yy*i/ln}
+if mosha==1 then
+obj.load("framebuffer")
+local mc=obj.getpixel((OEKAKI[nn-1][4]+get(lay..".x"))*(1-i/ln)+get("x")*i/ln+obj.screen_w*0.5,(OEKAKI[nn-1][5]+get(lay..".y"))*(1-i/ln)+get("y")*i/ln+obj.screen_h*0.5,"col")
+OEKAKI[nn-1+i][1]=mc
+end
+end
+else
+OEKAKI[#OEKAKI][4]=xx
+OEKAKI[#OEKAKI][5]=yy
+if mosha==1 then
+obj.load("framebuffer")
+local mc=obj.getpixel(get("x")+obj.screen_w*0.5,get("y")+obj.screen_h*0.5,"col")
+OEKAKI[#OEKAKI][1]=mc
+end
+end
+end
+end
+else
+OEKAKI[#OEKAKI+1]={c,size,figu}
+if 8<#reDO then
+for i=1,#reDO-8 do
+table.remove(reDO,1)
+end
+end
+if ctrl[2] and ctrl[3] and 0<#reDO then
+OEKAKI={}
+for i=1,#reDO[#reDO]-1 do
+OEKAKI[i]=reDO[#reDO][i]
+end
+table.remove(reDO,#reDO)
+end
+if not ctrl[1] then
+redof=false
+end
+if ctrl[1] then
+if not redof then
+reDO[#reDO+1]={}
+for i=1,#OEKAKI do
+reDO[#reDO][i]={}
+for j=1,#OEKAKI[i] do
+reDO[#reDO][i][j]=OEKAKI[i][j]
+end
+end
+redof=true
+end
+
+for i=1,#OEKAKI do
+if OEKAKI[i][4]~=nil then
+if size*0.5>((OEKAKI[i][4]-get("x")+get(lay..".x"))*(OEKAKI[i][4]-get("x")+get(lay..".x"))+(OEKAKI[i][5]-get("y")+get(lay..".y"))*(OEKAKI[i][5]-get("y")+get(lay..".y")))^0.5 then
+OEKAKI[i][4]=nil
+OEKAKI[i][5]=nil
+end
+end
+end
+
+end
+end
+local qq=0
+for i=1,#OEKAKI do
+if OEKAKI[i-qq][4]==nil then
+table.remove(OEKAKI,i-qq)
+qq=qq+1
+end
+end
+else
+if type(OEKAKI2)~="table" then
+OEKAKI2={}
+end
+if type(reDO2)~="table" then
+reDO2={}
+end
+OEKAKI2[#OEKAKI2+1]={c,size,figu}
+if 8<#reDO2 then
+for i=1,#reDO2-8 do
+table.remove(reDO2,1)
+end
+end
+if ctrl[2] and ctrl[3] and 0<#reDO2 then
+OEKAKI2={}
+for i=1,#reDO2[#reDO2]-1 do
+OEKAKI2[i]=reDO2[#reDO2][i]
+end
+table.remove(reDO2,#reDO2)
+end
+if not ctrl[1] then
+redof=false
+OEKAKIf2=false
+end
+if not obj.check0 then
+if ctrl[1] and not ctrl[2] then
+if not redof then
+reDO2[#reDO2+1]={}
+for i=1,#OEKAKI2 do
+reDO2[#reDO2][i]={}
+for j=1,#OEKAKI2[i] do
+reDO2[#reDO2][i][j]=OEKAKI2[i][j]
+end
+end
+redof=true
+end
+if not OEKAKIf2 then
+OEKAKI2[#OEKAKI2][4]=get("x")-get(lay..".x")
+OEKAKI2[#OEKAKI2][5]=get("y")-get(lay..".y")
+OEKAKIf2=true
+if mosha==1 then
+obj.load("framebuffer")
+local mc=obj.getpixel(get("x")+obj.screen_w*0.5,get("y")+obj.screen_h*0.5,"col")
+OEKAKI2[#OEKAKI2][1]=mc
+end
+else
+local xx=get("x")-get(lay..".x")
+local yy=get("y")-get(lay..".y")
+if ((OEKAKI2[#OEKAKI2-1][4]-xx)*(OEKAKI2[#OEKAKI2-1][4]-xx)+(OEKAKI2[#OEKAKI2-1][5]-yy)*(OEKAKI2[#OEKAKI2-1][5]-yy))^0.5>ho*0.5 then
+local l=((OEKAKI2[#OEKAKI2-1][4]-xx)*(OEKAKI2[#OEKAKI2-1][4]-xx)+(OEKAKI2[#OEKAKI2-1][5]-yy)*(OEKAKI2[#OEKAKI2-1][5]-yy))^0.5
+local ln=math.floor(l/(ho*0.5))
+local nn=#OEKAKI2
+for i=1,ln do
+OEKAKI2[nn-1+i]={OEKAKI2[nn][1],OEKAKI2[nn][2],OEKAKI2[nn][3],OEKAKI2[nn-1][4]*(1-i/ln)+xx*i/ln,OEKAKI2[nn-1][5]*(1-i/ln)+yy*i/ln}
+if mosha==1 then
+obj.load("framebuffer")
+local mc=obj.getpixel((OEKAKI2[nn-1][4]+get(lay..".x"))*(1-i/ln)+get("x")*i/ln+obj.screen_w*0.5,(OEKAKI2[nn-1][5]+get(lay..".y"))*(1-i/ln)+get("y")*i/ln+obj.screen_h*0.5,"col")
+OEKAKI2[nn-1+i][1]=mc
+end
+end
+else
+OEKAKI2[#OEKAKI2][4]=xx
+OEKAKI2[#OEKAKI2][5]=yy
+if mosha==1 then
+obj.load("framebuffer")
+local mc=obj.getpixel(get("x")+obj.screen_w*0.5,get("y")+obj.screen_h*0.5,"col")
+OEKAKI2[#OEKAKI2][1]=mc
+end
+end
+end
+end
+else
+if ctrl[1] then
+if not redof then
+reDO2[#reDO2+1]={}
+for i=1,#OEKAKI2 do
+reDO2[#reDO2][i]={}
+for j=1,#OEKAKI2[i] do
+reDO2[#reDO2][i][j]=OEKAKI2[i][j]
+end
+end
+redof=true
+end
+for i=1,#OEKAKI2 do
+if OEKAKI2[i][4]~=nil then
+if size*0.5>((OEKAKI2[i][4]-get("x")+get(lay..".x"))*(OEKAKI2[i][4]-get("x")+get(lay..".x"))+(OEKAKI2[i][5]-get("y")+get(lay..".y"))*(OEKAKI2[i][5]-get("y")+get(lay..".y")))^0.5 then
+OEKAKI2[i][4]=nil
+OEKAKI2[i][5]=nil
+end
+end
+end
+end
+end
+local qq=0
+for i=1,#OEKAKI2 do
+if OEKAKI2[i-qq][4]==nil then
+table.remove(OEKAKI2,i-qq)
+qq=qq+1
+end
+end
+
+end
+obj.load("figure",figu,c,size/get("zoom")*100)
+
+
+
+@Canvas
+--track0:Save,0,1,0,1
+--track1:Read,0,1,0,1
+--track2:Erase,0,1,0,1
+--track3:Progress,0,100,100,0.01
+--dialog:filename,local file="oekaki001";CanvasSize,local cmp={nil,nil};Shake,local bure=nil;RanSeed,local ran=0;IntroStyle0-6,local app=0;Method1 Intvl,local ap1_1=10;Method2 Intvl,local ap2_1=5;Method3 Expand,local ap3_1=300;Method3 Intvl,local ap3_2=100;Method3 blur,local ap3_3=10;Method4 Intvl,local ap4_1=20;Method4Dir1-8,local ap4_2=3;Method6Name,local ap6_1="oekaki002";
+--check0:Reverse Play,0
+local path=obj.getinfo("script_path")..file..".txt"
+local draw=obj.draw
+local load=obj.load
+local rand=obj.rand
+local frame=obj.frame
+local floor=math.floor
+local remove=table.remove
+if not string.find(tostring(loadf),"table:") then
+loadf={}
+end
+if obj.track1==1 then
+loadf[obj.layer]=true
+tmpoe={}
+if string.find(tostring(OEKAKI),"table:") then
+for i=1,#OEKAKI do
+tmpoe[i]=OEKAKI[i]
+end
+else
+OEKAKI={}
+end
+if io.open(path,"r") then
+dofile(path)
+else
+obj.setfont("",50,4)
+load("No Ref. File")
+draw()
+end
+end
+local burec
+if bure==nil or bure==0 then
+burec=function()
+return 0
+end
+else
+burec=function(xi,xb,xtable,xy)
+return rand(-xtable[xi][2]*0.2,xtable[xi][2]*0.2,xi*xy,math.floor(frame/bure))
+end
+end
+if ran==nil then
+ran=0
+end
+if app==nil then
+app=0
+end
+if app<0 then
+app=0
+end
+if 6<app then
+app=0
+end
+if ap1_1==nil then
+ap1_1=100
+end
+ap1_1=floor(ap1_1)
+if ap1_1<1 then
+ap1_1=1
+end
+if ap2_1==nil then
+ap2_1=1
+end
+if ap3_1==nil then
+ap3_1=100
+end
+ap3_1=ap3_1*0.01
+if ap3_2==nil then
+ap3_2=1
+end
+ap3_2=floor(ap3_2)
+if ap3_2<1 then
+ap3_2=1
+end
+if ap3_3==nil then
+ap3_3=0
+end
+if ap4_1==nil then
+ap4_1=1
+end
+if ap4_2==nil then
+ap4_2=0
+end
+if app==1 or app==2 or app==5 or app==6 then
+obj.check0=false
+end
+if OEKAKI==nil or #OEKAKI==0 then
+obj.alpha=0
+else
+if not string.find(tostring(cmp),"table:") then
+cmp={}
+end
+if cmp[1]==nil then
+cmp[1]=obj.screen_w
+end
+if cmp[2]==nil then
+cmp[2]=obj.screen_h
+end
+cmp[1]=cmp[1]+cmp[1]%2
+cmp[2]=cmp[2]+cmp[2]%2
+obj.setoption("dst","tmp",cmp[1],cmp[2])
+if not OEKAKI_add then
+if not obj.check0 then
+	if app==0 then
+local apoe={}
+for i=1,#OEKAKI do
+apoe[i]=OEKAKI[i]
+end
+local n=floor(#apoe*obj.track3*0.01)
+load("figure",apoe[1][3],apoe[1][1],apoe[1][2])
+		for i=1,n do
+			if 1<i and (apoe[i][3]~=apoe[i-1][3] or apoe[i][1]~=apoe[i-1][1] or apoe[i][2]~=apoe[i-1][2]) then
+load("figure",apoe[i][3],apoe[i][1],apoe[i][2])
+			end
+draw(apoe[i][4]+burec(i,bure,apoe,4),apoe[i][5]+burec(i,bure,apoe,5))
+		end
+	elseif app==1 then
+local apoe={}
+for i=1,#OEKAKI do
+apoe[i]=OEKAKI[i]
+end
+local turn={}
+for i=1,#apoe do
+turn[i]=i
+end
+local i=1
+local turn2={}
+while(0) do
+local nn=rand(floor(ap1_1*0.4),ap1_1,ran,i*9)
+turn2[i]={}
+local nnn=#turn
+for j=1,nn do
+local pn=rand(0,1,ran,i)
+local m
+if pn==0 then
+m=j
+else
+if nnn<nn then
+m=nnn+1-j
+else
+m=nn+1-j
+end
+end
+if m==0 then
+break
+end
+turn2[i][m]=turn[1]
+remove(turn,1)
+if #turn==0 then
+break
+end
+end
+if #turn==0 then
+break
+end
+i=i+1
+end
+for i=1,#turn2 do
+local n=rand(1,#turn2,ran,i*3)
+for j=1,#turn2[n] do
+turn[#turn+1]=turn2[n][j]
+end
+remove(turn2,n)
+end
+local n=floor(#apoe*obj.track3*0.01)
+load("figure",apoe[turn[1]][3],apoe[turn[1]][1],apoe[turn[1]][2])
+		for i=1,n do
+local i1=turn[i]
+			if 1<i and (apoe[i1][3]~=apoe[turn[i-1]][3] or apoe[i1][1]~=apoe[turn[i-1]][1] or apoe[i1][2]~=apoe[turn[i-1]][2]) then
+load("figure",apoe[i1][3],apoe[i1][1],apoe[i1][2])
+			end
+draw(apoe[i1][4]+burec(i1,bure,apoe,4),apoe[i1][5]+burec(i1,bure,apoe,5))
+		end
+elseif app==2 then
+local apoe={}
+for i=1,#OEKAKI do
+apoe[i]=OEKAKI[i]
+end
+local turn={}
+local len=#apoe
+local len2=floor(len/(ap2_1+1))
+len=len-len2*ap2_1
+for i=1,ap2_1-1 do
+turn[i]=len2+floor(len*rand(60,140,ran,i*7)*0.01/(ap2_1+1-i))
+len=len-floor(len*rand(60,140,ran,i*7)*0.01/(ap2_1+1-i))
+end
+turn[ap2_1]=len2+len
+local max=turn[1]
+for i=2,ap2_1 do
+max=math.max(max,turn[i])
+end
+local turn2={}
+turn2[0]=0
+for i=1,ap2_1 do
+turn2[i]=turn2[i-1]+turn[i]
+end
+n=floor(max*obj.track3*0.01)
+for i=1,ap2_1 do
+local pn=rand(0,1,ran,i)
+for j=turn2[i-1]+1,turn2[i] do
+local root
+if pn==0 then
+root=j-turn2[i-1]<=n
+else
+root=turn[i]-n<j-turn2[i-1]
+end
+if root then
+load("figure",apoe[j][3],apoe[j][1],apoe[j][2])
+draw(apoe[j][4]+burec(j,bure,apoe,4),apoe[j][5]+burec(j,bure,apoe,5))
+end
+end
+end
+elseif app==3 then
+local apoe=OEKAKI
+local n=floor(#apoe*obj.track3*0.01)
+local effect=obj.effect
+local prg=floor((#apoe+ap3_2)*obj.track3*0.01)
+load("figure",apoe[1][3],apoe[1][1],apoe[1][2])
+		for i=1,#apoe do
+if i<=prg then
+local bks=ap3_3*(1-(prg-i)/ap3_2)
+if ap3_3<bks then
+bks=ap3_3
+elseif bks<0 then
+bks=0
+end
+load("figure",apoe[i][3],apoe[i][1],apoe[i][2])
+if 0<bks then
+effect("Blur","Range",bks)
+end
+local zoom=ap3_1+(1-ap3_1)*(prg-i)/ap3_2
+if 1<=ap3_1 then
+if zoom<1 then
+zoom=1
+elseif ap3_1<zoom then
+zoom=ap3_1
+end
+else
+if zoom<ap3_1 then
+zoom=ap3_1
+elseif 1<zoom then
+zoom=1
+end
+end
+draw(apoe[i][4]+burec(i,bure,apoe,4),apoe[i][5]+burec(i,bure,apoe,5),0,zoom)
+		end
+end
+elseif app==4 then
+local apoe=OEKAKI
+local sw=cmp[1]*0.5
+local sh=cmp[2]*0.5
+local prg=floor((#apoe+ap4_1)*obj.track3*0.01)
+local rl
+local strt={}
+if ap4_2==8 then
+rl=rand(1,8,ran*5,0)
+if rl==1 or rl==5 then
+strt={-sw,sh-cmp[2]*rand(0,100,ran,0)*0.01}
+elseif rl==2 or rl==6 then
+strt={-sw+cmp[1]*rand(0,100,ran,0)*0.01,-sh}
+elseif rl==3 or rl==7 then
+strt={sw,-sh+cmp[2]*rand(0,100,ran,0)*0.01}
+elseif rl==4 or rl==8 then
+strt={sw-cmp[1]*rand(0,100,ran,0)*0.01,sh}
+end
+end
+load("figure",apoe[1][3],apoe[1][1],apoe[1][2])
+		for i=1,#apoe do
+if i<=prg then
+			if 1<i and (apoe[i][3]~=apoe[i-1][3] or apoe[i][1]~=apoe[i-1][1] or apoe[i][2]~=apoe[i-1][2]) then
+load("figure",apoe[i][3],apoe[i][1],apoe[i][2])
+			end
+local x,y
+
+if ap4_2==1 then
+x=-sw
+y=apoe[i][5]
+elseif ap4_2==2 then
+x=apoe[i][4]
+y=-sh
+elseif ap4_2==3 then
+x=sw
+y=apoe[i][5]
+elseif ap4_2==4 then
+x=apoe[i][4]
+y=sh
+elseif ap4_2==5 then
+local pn=rand(0,1,ran,3*i)
+if pn==0 then
+x=-sw
+else
+x=sw
+end
+y=apoe[i][5]
+elseif ap4_2==6 then
+local pn=rand(0,1,ran,11*i)
+if pn==0 then
+y=-sh
+else
+y=sh
+end
+x=apoe[i][4]
+elseif ap4_2==7 then
+local pn=rand(1,4,ran,7*i)
+if pn==1 then
+x=-sw
+y=apoe[i][5]
+elseif pn==2 then
+x=apoe[i][4]
+y=-sh
+elseif pn==3 then
+x=sw
+y=apoe[i][5]
+elseif pn==4 then
+x=apoe[i][4]
+y=sh
+end
+elseif ap4_2==8 then
+if rl<=4 then
+	if strt[1]==-sw then
+x=strt[1]
+y=strt[2]
+strt[2]=strt[2]-apoe[i][2]
+		if strt[2]<-sh then
+strt[2]=-sh
+strt[1]=-sw+1
+		end
+	elseif strt[1]==sw then
+x=strt[1]
+y=strt[2]
+strt[2]=strt[2]+apoe[i][2]
+		if sh<strt[2] then
+strt[2]=sh
+strt[1]=sw-1
+		end
+	elseif strt[2]==-sh then
+x=strt[1]
+y=strt[2]
+strt[1]=strt[1]+apoe[i][2]
+		if sw<strt[1] then
+strt[1]=sw
+strt[2]=-sh+1
+		end
+	elseif strt[2]==sh then
+x=strt[1]
+y=strt[2]
+strt[1]=strt[1]-apoe[i][2]
+		if strt[1]<-sw then
+strt[1]=-sw
+strt[2]=sh-1
+		end
+	end
+
+else
+	if strt[1]==-sw then
+x=strt[1]
+y=strt[2]
+strt[2]=strt[2]+apoe[1][2]
+		if sh<strt[2] then
+strt[2]=sh
+strt[1]=-sw+1
+		end
+	elseif strt[1]==sw then
+x=strt[1]
+y=strt[2]
+strt[2]=strt[2]-apoe[1][2]
+		if strt[2]<-sh then
+strt[2]=-sh
+strt[1]=sw-1
+		end
+	elseif strt[2]==-sh then
+x=strt[1]
+y=strt[2]
+strt[1]=strt[1]-apoe[1][2]
+		if strt[1]<-sw then
+strt[1]=-sw
+strt[2]=-sh+1
+		end
+	elseif strt[2]==sh then
+x=strt[1]
+y=strt[2]
+strt[1]=strt[1]+apoe[1][2]
+		if sw<strt[1] then
+strt[1]=sw
+strt[2]=sh-1
+		end
+	end
+
+end
+else
+x=apoe[i][4]
+y=apoe[i][5]
+end
+local prg2=(prg-i)/ap4_1
+if prg2<0 then
+prg2=0
+elseif 1<prg2 then
+prg2=1
+end
+x=x+(apoe[i][4]-x)*prg2
+y=y+(apoe[i][5]-y)*prg2
+draw(x+burec(i,bure,apoe,4),y+burec(i,bure,apoe,5))
+		end
+end
+elseif app==5 then
+local apoe=OEKAKI
+load("figure",apoe[1][3],apoe[1][1],apoe[1][2])
+local sw=cmp[1]*0.5
+local sh=cmp[2]*0.5
+local prg=obj.track3*0.01
+for i=1,#apoe do
+if 1<i and (apoe[i][1]~=apoe[i-1][1] or apoe[i][2]~=apoe[i-1][2] or apoe[i][3]~=apoe[i-1][3]) then
+load("figure",apoe[i][3],apoe[i][1],apoe[i][2])
+end
+local x=rand(-sw,sw,ran,i*7)
+local y=rand(-sh,sh,2*ran+1,i*13)
+draw(x+(apoe[i][4]-x)*prg+burec(i,bure,apoe,4),y+(apoe[i][5]-y)*prg+burec(i,bure,apoe,5))
+end
+elseif app==6 then
+local path2=obj.getinfo("script_path")..ap6_1..".txt"
+local apoe=OEKAKI
+if io.open(path2,"r") then
+dofile(path2)
+else
+obj.setfont("",50,4)
+load("No Ref. File")
+draw()
+end
+local apoe2=OEKAKI
+local prg=obj.track3*0.01
+local sw=cmp[1]*0.5
+local sh=cmp[2]*0.5
+if #apoe2<=#apoe then
+	if prg==0 then
+load("figure",apoe2[1][3],apoe2[1][1],apoe2[1][2])
+		for i=1,#apoe2 do
+if 1<i and (apoe2[i][1]~=apoe2[i-1][1] or apoe2[i][2]~=apoe2[i-1][2] or apoe2[i][3]~=apoe2[i-1][3]) then
+load("figure",apoe2[i][3],apoe2[i][1],apoe2[i][2])
+end
+draw(apoe2[i][4]+burec(i,bure,apoe2,4),apoe2[i][5]+burec(i,bure,apoe2,5))
+		end
+	else
+local sub=#apoe-#apoe2
+		for i=1,#apoe do
+local n=(i-1-sub)%#apoe2+1
+local R1,G1,B1=RGB(apoe[i][1])
+local R2,G2,B2=RGB(apoe2[n][1])
+local ap6_c=RGB(R1*prg+R2*(1-prg),G1*prg+G2*(1-prg),B1*prg+B2*(1-prg))
+local ap6_f
+if prg<0.5 then
+ap6_f=apoe2[n][3]
+else
+ap6_f=apoe[i][3]
+end
+load("figure",ap6_f,ap6_c,apoe[i][2]*prg+apoe2[n][2]*(1-prg))
+x=apoe[i][4]*prg+apoe2[n][4]*(1-prg)
+y=apoe[i][5]*prg+apoe2[n][5]*(1-prg)
+draw(x+burec(i,bure,apoe,4),y+burec(i,bure,apoe,5))
+		end
+	end
+else
+	if prg==1 then
+load("figure",apoe[1][3],apoe[1][1],apoe[1][2])
+		for i=1,#apoe do
+if 1<i and (apoe[i][1]~=apoe[i-1][1] or apoe[i][2]~=apoe[i-1][2] or apoe[i][3]~=apoe[i-1][3]) then
+load("figure",apoe[i][3],apoe[i][1],apoe[i][2])
+end
+draw(apoe[i][4]+burec(i,bure,apoe,4),apoe[i][5]+burec(i,bure,apoe,5))
+		end
+	else
+local sub=#apoe2-#apoe
+		for i=1,#apoe2 do
+local n=(i-1-sub)%#apoe+1
+local R1,G1,B1=RGB(apoe[n][1])
+local R2,G2,B2=RGB(apoe2[i][1])
+local ap6_c=RGB(R1*prg+R2*(1-prg),G1*prg+G2*(1-prg),B1*prg+B2*(1-prg))
+local ap6_f
+if prg<0.5 then
+ap6_f=apoe2[i][3]
+else
+ap6_f=apoe[n][3]
+end
+load("figure",ap6_f,ap6_c,apoe[n][2]*prg+apoe2[i][2]*(1-prg))
+x=apoe[n][4]*prg+apoe2[i][4]*(1-prg)
+y=apoe[n][5]*prg+apoe2[i][5]*(1-prg)
+draw(x+burec(i,bure,apoe2,4),y+burec(i,bure,apoe2,5))
+		end
+	end
+end
+OEKAKI={}
+for i=1,#apoe do
+OEKAKI[i]=apoe[i]
+end
+end
+else
+if app==3 then
+local apoe=OEKAKI
+local n=floor(#apoe*obj.track3*0.01)
+local effect=obj.effect
+local prg=floor(#apoe*(1-obj.track3*0.01)-ap3_2*obj.track3*0.01)
+		for i=1,#apoe do
+if prg<i then
+local bks=ap3_3*(1-(i-prg)/ap3_2)
+if ap3_3<bks then
+bks=ap3_3
+elseif bks<0 then
+bks=0
+end
+load("figure",apoe[i][3],apoe[i][1],apoe[i][2])
+if 0<bks then
+effect("Blur","Range",bks)
+end
+local zoom=ap3_1+(1-ap3_1)*(i-prg)/ap3_2
+if 1<=ap3_1 then
+if zoom<1 then
+zoom=1
+elseif ap3_1<zoom then
+zoom=ap3_1
+end
+else
+if zoom<ap3_1 then
+zoom=ap3_1
+elseif 1<zoom then
+zoom=1
+end
+end
+draw(apoe[i][4]+burec(i,bure,apoe,4),apoe[i][5]+burec(i,bure,apoe,5),0,zoom)
+		end
+end
+
+elseif app==4 then
+local apoe=OEKAKI
+local sw=cmp[1]*0.5
+local sh=cmp[2]*0.5
+local prg=floor((#apoe)*(1-obj.track3*0.01)-ap4_1*obj.track3*0.01)
+local rl
+local strt={}
+if ap4_2==8 then
+rl=rand(1,8,ran*5,0)
+if rl==1 or rl==5 then
+strt={-sw,sh-cmp[2]*rand(0,100,ran,0)*0.01}
+elseif rl==2 or rl==6 then
+strt={-sw+cmp[1]*rand(0,100,ran,0)*0.01,-sh}
+elseif rl==3 or rl==7 then
+strt={sw,-sh+cmp[2]*rand(0,100,ran,0)*0.01}
+elseif rl==4 or rl==8 then
+strt={sw-cmp[1]*rand(0,100,ran,0)*0.01,sh}
+end
+end
+load("figure",apoe[1][3],apoe[1][1],apoe[1][2])
+		for i=1,#apoe do
+			if 1<i and (apoe[i][3]~=apoe[i-1][3] or apoe[i][1]~=apoe[i-1][1] or apoe[i][2]~=apoe[i-1][2]) then
+load("figure",apoe[i][3],apoe[i][1],apoe[i][2])
+			end
+if prg<i then
+local x,y
+
+if ap4_2==1 then
+x=-sw
+y=apoe[i][5]
+elseif ap4_2==2 then
+x=apoe[i][4]
+y=-sh
+elseif ap4_2==3 then
+x=sw
+y=apoe[i][5]
+elseif ap4_2==4 then
+x=apoe[i][4]
+y=sh
+elseif ap4_2==5 then
+local pn=rand(0,1,ran,3*i)
+if pn==0 then
+x=-sw
+else
+x=sw
+end
+y=apoe[i][5]
+elseif ap4_2==6 then
+local pn=rand(0,1,ran,11*i)
+if pn==0 then
+y=-sh
+else
+y=sh
+end
+x=apoe[i][4]
+elseif ap4_2==7 then
+local pn=rand(1,4,ran,7*i)
+if pn==1 then
+x=-sw
+y=apoe[i][5]
+elseif pn==2 then
+x=apoe[i][4]
+y=-sh
+elseif pn==3 then
+x=sw
+y=apoe[i][5]
+elseif pn==4 then
+x=apoe[i][4]
+y=sh
+end
+elseif ap4_2==8 then
+if rl<=4 then
+	if strt[1]==-sw then
+x=strt[1]
+y=strt[2]
+strt[2]=strt[2]-apoe[i][2]
+		if strt[2]<-sh then
+strt[2]=-sh
+strt[1]=-sw+1
+		end
+	elseif strt[1]==sw then
+x=strt[1]
+y=strt[2]
+strt[2]=strt[2]+apoe[i][2]
+		if sh<strt[2] then
+strt[2]=sh
+strt[1]=sw-1
+		end
+	elseif strt[2]==-sh then
+x=strt[1]
+y=strt[2]
+strt[1]=strt[1]+apoe[i][2]
+		if sw<strt[1] then
+strt[1]=sw
+strt[2]=-sh+1
+		end
+	elseif strt[2]==sh then
+x=strt[1]
+y=strt[2]
+strt[1]=strt[1]-apoe[i][2]
+		if strt[1]<-sw then
+strt[1]=-sw
+strt[2]=sh-1
+		end
+	end
+
+else
+	if strt[1]==-sw then
+x=strt[1]
+y=strt[2]
+strt[2]=strt[2]+apoe[1][2]
+		if sh<strt[2] then
+strt[2]=sh
+strt[1]=-sw+1
+		end
+	elseif strt[1]==sw then
+x=strt[1]
+y=strt[2]
+strt[2]=strt[2]-apoe[1][2]
+		if strt[2]<-sh then
+strt[2]=-sh
+strt[1]=sw-1
+		end
+	elseif strt[2]==-sh then
+x=strt[1]
+y=strt[2]
+strt[1]=strt[1]-apoe[1][2]
+		if strt[1]<-sw then
+strt[1]=-sw
+strt[2]=-sh+1
+		end
+	elseif strt[2]==sh then
+x=strt[1]
+y=strt[2]
+strt[1]=strt[1]+apoe[1][2]
+		if sw<strt[1] then
+strt[1]=sw
+strt[2]=sh-1
+		end
+	end
+
+end
+else
+x=apoe[i][4]
+y=apoe[i][5]
+end
+local prg2=(i-prg)/ap4_1
+if prg2<0 then
+prg2=0
+elseif 1<prg2 then
+prg2=1
+end
+x=x+(apoe[i][4]-x)*prg2
+y=y+(apoe[i][5]-y)*prg2
+draw(x+burec(i,bure,apoe,4),y+burec(i,bure,apoe,5))
+		end
+end
+
+else
+local n=math.floor(#OEKAKI*(1-obj.track3*0.01))
+if n<#OEKAKI then
+load("figure",OEKAKI[n+1][3],OEKAKI[n+1][1],OEKAKI[n+1][2])
+end
+for i=1,#OEKAKI do
+if n<i then
+if 1<i and (OEKAKI[i][3]~=OEKAKI[i-1][3] or OEKAKI[i][1]~=OEKAKI[i-1][1] or OEKAKI[i][2]~=OEKAKI[i-1][2]) then
+load("figure",OEKAKI[i][3],OEKAKI[i][1],OEKAKI[i][2])
+end
+obj.draw(OEKAKI[i][4]+burec(i,bure,OEKAKI,4),OEKAKI[i][5]+burec(i,bure,OEKAKI,5))
+end
+end
+end
+end
+else
+local n=math.floor(#OEKAKI*obj.track3*0.01)
+load("figure",OEKAKI[1][3],OEKAKI[1][1],OEKAKI[1][2])
+for i=1,n do
+if 1<i and (OEKAKI[i][3]~=OEKAKI[i-1][3] or OEKAKI[i][1]~=OEKAKI[i-1][1] or OEKAKI[i][2]~=OEKAKI[i-1][2]) then
+load("figure",OEKAKI[i][3],OEKAKI[i][1],OEKAKI[i][2])
+end
+draw(OEKAKI[i][4],OEKAKI[i][5])
+end
+for i=1,#OEKAKI2 do
+load("figure",OEKAKI2[i][3],OEKAKI2[i][1],OEKAKI2[i][2])
+draw(OEKAKI2[i][4],OEKAKI2[i][5])
+end
+if OEKAKI_ok then
+reDO[#reDO+1]={}
+for i=1,#OEKAKI do
+reDO[#reDO][i]={}
+for j=1,#OEKAKI[i] do
+reDO[#reDO][i][j]=OEKAKI[i][j]
+end
+end
+local oekaki={}
+for i=1,#OEKAKI+#OEKAKI2 do
+if i<=n then
+oekaki[i]=OEKAKI[i]
+elseif i<=n+#OEKAKI2 then
+oekaki[i]=OEKAKI2[i-n]
+else
+oekaki[i]=OEKAKI[i-#OEKAKI2]
+end
+end
+OEKAKI={}
+for i=1,#oekaki do
+OEKAKI[i]=oekaki[i]
+end
+OEKAKI2=nil
+end
+end
+obj.copybuffer("obj","tmp")
+if moshas==1 then
+obj.effect("Monochromatic","color",0xffffff,"Keep luminance",0)
+end
+end
+OEKAKI_add=nil
+OEKAKI_ok=nil
+if obj.track2==0 then
+allclear=false
+end
+if obj.track2==1 and not allclear then
+if reDO~=nil then
+reDO[#reDO+1]={}
+for i=1,#OEKAKI do
+reDO[#reDO][i]={}
+for j=1,#OEKAKI[i] do
+reDO[#reDO][i][j]=OEKAKI[i][j]
+end
+end
+end
+OEKAKI={}
+allclear=true
+end
+if obj.track0==1 then
+if file=="" then
+obj.setfont("",50,4)
+obj.load("Please enter filename")
+else
+local t=io.open(path,"w")
+t:write("OEKAKI={\n")
+for i=1,#OEKAKI do
+if i~=#OEKAKI then
+t:write("{"..OEKAKI[i][1]..","..OEKAKI[i][2]..","..[["]]..OEKAKI[i][3]..[["]]..","..OEKAKI[i][4]..","..OEKAKI[i][5].."},\n")
+else
+t:write("{"..OEKAKI[i][1]..","..OEKAKI[i][2]..","..[["]]..OEKAKI[i][3]..[["]]..","..OEKAKI[i][4]..","..OEKAKI[i][5].."}\n")
+end
+end
+t:write("}")
+t:close()
+end
+end
+
+
+if obj.track1==1 then
+loadoe={}
+for i=1,#OEKAKI do
+loadoe[i]=OEKAKI[i]
+end
+OEKAKI={}
+for i=1,#tmpoe do
+OEKAKI[i]=tmpoe[i]
+end
+tmpoe=nil
+end
+if obj.track1==0 and loadf[obj.layer] then
+OEKAKI={}
+for i=1,#loadoe do
+OEKAKI[i]=loadoe[i]
+end
+loadoe={}
+loadf[obj.layer]=false
+end
+
+
+
+
+
+@ChangeInfo
+--track0:Start,0,100,0,0.01
+--track1:End,0,100,100,0.01
+--track2:Preview,0,1,1,1
+--track3:Save,0,1,0,1
+--check0:PartialSave,0
+--dialog:Filename,local file="oekaki001";Load/chk,local loading=0;Shape/fig,local figu="Circle";Color/col,local color=0xffffff;Size,local size=100;Decimation,local mama=0;Start_pt,local hp=0;Rev_progress/chk,local rev=0;Cut1Paste2Copy3,local copype=0;Copy filename,local pfile="";CopyPasteStartPt,local sp=0;CopyPasteEndPt,local fp=100;PastePos,xy={0,0};Rotation,local radi=0;SaveAs,local anfile="";
+require("oekakifunc")
+ctrl=oekakifunc.state()
+local type = function(v)
+local lay=tostring("layer"..obj.layer+1)
+local v = v
+local s = tostring(v)
+if(string.find(s, "table:"))then return "table" end
+return "number"
+end
+local path=obj.getinfo("script_path")..file..".txt"
+local st=obj.track0*0.01
+local fl=obj.track1*0.01
+if sp==nil then
+sp=0
+end
+if fp==nil then
+fp=100
+end
+sp=sp*0.01
+fp=fp*0.01
+if sp<0 then
+sp=0
+elseif 1<sp then
+sp=1
+end
+if fp<0 then
+fp=0
+elseif 1<fp then
+fp=1
+end
+if size==nil then
+size=100
+end
+size=size*0.01
+if copype==nil then
+copype=0
+end
+if copype<0 then
+copype=0
+elseif 3<copype then
+copype=0
+end
+if copype==2 or copype==3 then
+if type(xy)~="table" then
+xy={}
+end
+obj.setanchor("xy",1)
+end
+if hp==nil then
+hp=0
+end
+hp=hp*0.01
+if hp<0 then
+hp=0
+end
+if 1<hp then
+hp=1
+end
+local floor=math.floor
+local pi=math.pi
+local sin=math.sin
+local cos=math.cos
+local atan=math.atan
+local draw=obj.draw
+local load=obj.load
+if radi==nil then
+radi=0
+end
+radi=radi*pi/180
+if loading==1 then
+if io.open(path,"r") then
+dofile(path)
+preoe={}
+afoe={}
+for i=1,#OEKAKI do
+preoe[i]={}
+afoe[i]={}
+for j=1,#OEKAKI[i] do
+preoe[i][j]=OEKAKI[i][j]
+afoe[i][j]=OEKAKI[i][j]
+end
+end
+OEKAKI=nil
+else
+obj.setfont("",50,4)
+load("No Ref. File")
+draw()
+end
+end
+if ctrl[2] and ctrl[3] then
+preoe={}
+for i=1,#afoe do
+preoe[i]=afoe[i]
+end
+end
+local n=#preoe
+local stn=floor(n*st)
+local fln=floor(n*fl)
+if fl<st then
+stn=fln
+end
+STN=stn
+FLN=fln
+local ww,hh=0,0
+local mmax=math.max
+local abs=math.abs
+for i=1,#preoe do
+ww=mmax(ww,abs(preoe[i][4])+preoe[i][2])
+hh=mmax(hh,abs(preoe[i][5])+preoe[i][2])
+end
+ww=ww*2
+hh=hh*2
+obj.setoption("dst","tmp",ww,hh)
+if obj.track2==0 then
+		for i=1,#preoe do
+load("figure",preoe[i][3],preoe[i][1],preoe[i][2])
+draw(preoe[i][4],preoe[i][5])
+		end
+else
+	if copype==0 then
+		for i=1,stn do
+load("figure",preoe[i][3],preoe[i][1],preoe[i][2])
+draw(preoe[i][4],preoe[i][5])
+		end
+		for i=fln+1,#preoe do
+load("figure",preoe[i][3],preoe[i][1],preoe[i][2])
+draw(preoe[i][4],preoe[i][5])
+		end
+		if mama==nil or mama==0 then
+			for i=stn+1,fln do
+local figu1,color1
+				if figu=="" then
+figu1=preoe[i][3]
+else
+figu1=figu
+				end
+				if color==nil then
+color1=preoe[i][1]
+else
+color1=color
+				end
+load("figure",figu1,color1,floor(preoe[i][2]*size))
+draw(preoe[i][4],preoe[i][5])
+			end
+		elseif 0<mama then
+			for i=stn+1,fln do
+				if i%mama==1 then
+local figu1,color1
+					if figu=="" then
+figu1=preoe[i][3]
+					else
+figu1=figu
+					end
+					if color==nil then
+color1=preoe[i][1]
+else
+color1=color
+					end
+load("figure",figu1,color1,floor(preoe[i][2]*size))
+draw(preoe[i][4],preoe[i][5])
+				end
+			end
+		elseif mama<0 then
+			for i=stn+1,fln do
+				if i==stn+1 then
+local figu1,color1
+					if figu=="" then
+figu1=preoe[i][3]
+					else
+figu1=figu
+					end
+					if color==nil then
+color1=preoe[i][1]
+else
+color1=color
+					end
+load("figure",figu1,color1,floor(preoe[i][2]*size))
+draw(preoe[i][4],preoe[i][5])
+				else
+local len=((preoe[i][4]-preoe[i-1][4])*(preoe[i][4]-preoe[i-1][4])+(preoe[i][5]-preoe[i-1][5])*(preoe[i][5]-preoe[i-1][5]))^0.5
+					if floor(preoe[i][2]*size)*2<len then
+local figu1,color1
+						if figu=="" then
+figu1=preoe[i][3]
+						else
+figu1=figu
+						end
+						if color==nil then
+color1=preoe[i][1]
+else
+color1=color
+						end
+load("figure",figu1,color1,floor(preoe[i][2]*size))
+draw(preoe[i][4],preoe[i][5])
+					else
+
+len=floor(len/(-mama))
+local figu1,color1
+						if figu=="" then
+figu1=preoe[i][3]
+						else
+figu1=figu
+						end
+						if color==nil then
+color1=preoe[i][1]
+else
+color1=color
+						end
+load("figure",figu1,color1,floor(preoe[i][2]*size))
+						for j=1,len do
+draw(preoe[i][4]*j/len+preoe[i-1][4]*(1-j/len),preoe[i][5]*j/len+preoe[i-1][5]*(1-j/len))
+						end
+					end
+				end
+			end
+		end
+	elseif copype==1 then
+		for i=1,stn do
+load("figure",preoe[i][3],preoe[i][1],preoe[i][2])
+draw(preoe[i][4],preoe[i][5])
+		end
+		for i=fln+1,#preoe do
+load("figure",preoe[i][3],preoe[i][1],preoe[i][2])
+draw(preoe[i][4],preoe[i][5])
+		end
+	elseif copype==2 then
+		for i=1,fln do
+load("figure",preoe[i][3],preoe[i][1],preoe[i][2])
+draw(preoe[i][4],preoe[i][5])
+end
+spn=floor(n*sp)
+fpn=floor(n*fp)
+if fpn<spn then
+spn=fpn
+end
+local px=xy[1]
+local py=xy[2]
+
+		if mama==nil or mama==0 then
+			for i=spn+1,fpn do
+local figu1,color1
+				if figu=="" then
+figu1=preoe[i][3]
+else
+figu1=figu
+				end
+				if color==nil then
+color1=preoe[i][1]
+else
+color1=color
+				end
+load("figure",figu1,color1,floor(preoe[i][2]*size))
+local r=(preoe[i][4]*preoe[i][4]+preoe[i][5]*preoe[i][5])^0.5
+local deg=atan(preoe[i][5]/preoe[i][4])
+if preoe[i][4]<0 then
+deg=deg+pi
+end
+draw(r*cos(deg+radi)+px,r*sin(deg+radi)+py)
+			end
+		elseif 0<mama then
+			for i=spn+1,fpn do
+				if i%mama==1 then
+local figu1,color1
+					if figu=="" then
+figu1=preoe[i][3]
+					else
+figu1=figu
+					end
+					if color==nil then
+color1=preoe[i][1]
+else
+color1=color
+					end
+load("figure",figu1,color1,floor(preoe[i][2]*size))
+local r=(preoe[i][4]*preoe[i][4]+preoe[i][5]*preoe[i][5])^0.5
+local deg=atan(preoe[i][5]/preoe[i][4])
+if preoe[i][4]<0 then
+deg=deg+pi
+end
+draw(r*cos(deg+radi)+px,r*sin(deg+radi)+py)
+				end
+			end
+
+		elseif mama<0 then
+
+			for i=spn+1,fpn do
+				if i==spn+1 then
+local figu1,color1
+					if figu=="" then
+figu1=preoe[i][3]
+					else
+figu1=figu
+					end
+					if color==nil then
+color1=preoe[i][1]
+else
+color1=color
+					end
+load("figure",figu1,color1,floor(preoe[i][2]*size))
+local r=(preoe[i][4]*preoe[i][4]+preoe[i][5]*preoe[i][5])^0.5
+local deg=atan(preoe[i][5]/preoe[i][4])
+if preoe[i][4]<0 then
+deg=deg+pi
+end
+draw(r*cos(deg+radi)+px,r*sin(deg+radi)+py)
+				else
+local len=((preoe[i][4]-preoe[i-1][4])*(preoe[i][4]-preoe[i-1][4])+(preoe[i][5]-preoe[i-1][5])*(preoe[i][5]-preoe[i-1][5]))^0.5
+					if floor(preoe[i][2]*size)*2<len then
+local figu1,color1
+						if figu=="" then
+figu1=preoe[i][3]
+						else
+figu1=figu
+						end
+						if color==nil then
+color1=preoe[i][1]
+else
+color1=color
+						end
+load("figure",figu1,color1,floor(preoe[i][2]*size))
+local r=(preoe[i][4]*preoe[i][4]+preoe[i][5]*preoe[i][5])^0.5
+local deg=atan(preoe[i][5]/preoe[i][4])
+if preoe[i][4]<0 then
+deg=deg+pi
+end
+draw(r*cos(deg+radi)+px,r*sin(deg+radi)+py)
+					else
+len=floor(len/(-mama))
+local figu1,color1
+						if figu=="" then
+figu1=preoe[i][3]
+						else
+figu1=figu
+						end
+						if color==nil then
+color1=preoe[i][1]
+else
+color1=color
+						end
+load("figure",figu1,color1,floor(preoe[i][2]*size))
+						for j=1,len do
+local x=preoe[i][4]*j/len+preoe[i-1][4]*(1-j/len)
+local y=preoe[i][5]*j/len+preoe[i-1][5]*(1-j/len)
+local r=(x*x+y*y)^0.5
+local deg=atan(y/x)
+if x<0 then
+deg=deg+pi
+end
+draw(r*cos(deg+radi)+px,r*sin(deg+radi)+py)
+						end
+					end
+				end
+			end
+		end
+load("figure","Circle",0xffffff,30,2)
+obj.effect("Add border","Size",2)
+draw(px,py)
+	elseif copype==3 then
+		for i=1,fln do
+load("figure",preoe[i][3],preoe[i][1],preoe[i][2])
+draw(preoe[i][4],preoe[i][5])
+end
+pfile=obj.getinfo("script_path")..pfile..".txt"
+if io.open(pfile,"r") then
+dofile(pfile)
+peoe={}
+for i=1,#OEKAKI do
+peoe[i]=OEKAKI[i]
+end
+OEKAKI=nil
+else
+obj.setfont("",50,4)
+load("No Ref. File")
+draw()
+end
+local pn=#peoe
+spn=floor(pn*sp)
+fpn=floor(pn*fp)
+if fpn<spn then
+spn=fpn
+end
+local px=xy[1]
+local py=xy[2]
+
+		if mama==nil or mama==0 then
+			for i=spn+1,fpn do
+local figu1,color1
+				if figu=="" then
+figu1=peoe[i][3]
+else
+figu1=figu
+				end
+				if color==nil then
+color1=peoe[i][1]
+else
+color1=color
+				end
+load("figure",figu1,color1,floor(peoe[i][2]*size))
+local r=(peoe[i][4]*peoe[i][4]+peoe[i][5]*peoe[i][5])^0.5
+local deg=atan(peoe[i][5]/peoe[i][4])
+if peoe[i][4]<0 then
+deg=deg+pi
+end
+draw(r*cos(deg+radi)+px,r*sin(deg+radi)+py)
+			end
+		elseif 0<mama then
+			for i=spn+1,fpn do
+				if i%mama==1 then
+local figu1,color1
+					if figu=="" then
+figu1=peoe[i][3]
+					else
+figu1=figu
+					end
+					if color==nil then
+color1=peoe[i][1]
+else
+color1=color
+					end
+load("figure",figu1,color1,floor(peoe[i][2]*size))
+local r=(peoe[i][4]*peoe[i][4]+peoe[i][5]*peoe[i][5])^0.5
+local deg=atan(peoe[i][5]/peoe[i][4])
+if peoe[i][4]<0 then
+deg=deg+pi
+end
+draw(r*cos(deg+radi)+px,r*sin(deg+radi)+py)
+				end
+			end
+		elseif mama<0 then
+			for i=spn+1,fpn do
+				if i==spn+1 then
+local figu1,color1
+					if figu=="" then
+figu1=peoe[i][3]
+					else
+figu1=figu
+					end
+					if color==nil then
+color1=peoe[i][1]
+else
+color1=color
+					end
+load("figure",figu1,color1,floor(peoe[i][2]*size))
+local r=(peoe[i][4]*peoe[i][4]+peoe[i][5]*peoe[i][5])^0.5
+local deg=atan(peoe[i][5]/peoe[i][4])
+if peoe[i][4]<0 then
+deg=deg+pi
+end
+draw(r*cos(deg+radi)+px,r*sin(deg+radi)+py)
+				else
+local len=((peoe[i][4]-peoe[i-1][4])*(peoe[i][4]-peoe[i-1][4])+(peoe[i][5]-peoe[i-1][5])*(peoe[i][5]-peoe[i-1][5]))^0.5
+					if floor(peoe[i][2]*size)*2<len then
+local figu1,color1
+					if figu=="" then
+figu1=peoe[i][3]
+					else
+figu1=figu
+					end
+					if color==nil then
+color1=peoe[i][1]
+else
+color1=color
+					end
+load("figure",figu1,color1,floor(peoe[i][2]*size))
+local r=(peoe[i][4]*peoe[i][4]+peoe[i][5]*peoe[i][5])^0.5
+local deg=atan(peoe[i][5]/peoe[i][4])
+if peoe[i][4]<0 then
+deg=deg+pi
+end
+draw(r*cos(deg+radi)+px,r*sin(deg+radi)+py)
+					else
+len=floor(len/(-mama))
+local figu1,color1
+					if figu=="" then
+figu1=peoe[i][3]
+					else
+figu1=figu
+					end
+					if color==nil then
+color1=peoe[i][1]
+else
+color1=color
+					end
+load("figure",figu1,color1,floor(peoe[i][2]*size))
+for j=1,len do
+local x=peoe[i][4]*j/len+peoe[i-1][4]*(1-j/len)
+local y=peoe[i][5]*j/len+peoe[i-1][5]*(1-j/len)
+local r=(x*x+y*y)^0.5
+local deg=atan(y/x)
+if x<0 then
+deg=deg+pi
+end
+draw(r*cos(deg+radi)+px,r*sin(deg+radi)+py)
+end
+					end
+				end
+			end
+		end
+load("figure","Circle",0xffffff,30,2)
+obj.effect("Add border","Size",2)
+draw(px,py)
+	end
+end
+obj.copybuffer("obj","tmp")
+if obj.track3==0 then
+savef=false
+end
+if obj.track3==1 and not savef then
+afoe={}
+for i=1,#preoe do
+afoe[i]=preoe[i]
+end
+if copype==0 then
+local save1={}
+local save2={}
+local save3={}
+	for i=1,stn do
+save2[i]=preoe[i]
+	end
+	for i=fln+1,#preoe do
+save3[i-fln]=preoe[i]
+	end
+	if mama==nil or mama==0 then
+		for i=stn+1,fln do
+local figu1,color1
+			if figu=="" then
+figu1=preoe[i][3]
+			else
+figu1=figu
+			end
+			if color==nil then
+color1=preoe[i][1]
+			else
+color1=color
+			end
+save1[#save1+1]={color1,floor(preoe[i][2]*size),figu1,preoe[i][4],preoe[i][5]}
+		end
+	elseif 0<mama then
+		for i=stn+1,fln do
+			if i%mama==1 then
+local figu1,color1
+				if figu=="" then
+figu1=preoe[i][3]
+				else
+figu1=figu
+				end
+				if color==nil then
+color1=preoe[i][1]
+				else
+color1=color
+				end
+save1[#save1+1]={color1,floor(preoe[i][2]*size),figu1,preoe[i][4],preoe[i][5]}
+			end
+		end
+	elseif mama<0 then
+		for i=stn+1,fln do
+			if i==stn+1 then
+local figu1,color1
+				if figu=="" then
+figu1=preoe[i][3]
+				else
+figu1=figu
+				end
+				if color==nil then
+color1=preoe[i][1]
+				else
+color1=color
+				end
+save1[#save1+1]={color1,floor(preoe[i][2]*size),figu1,preoe[i][4],preoe[i][5]}
+			else
+local len=((preoe[i][4]-preoe[i-1][4])*(preoe[i][4]-preoe[i-1][4])+(preoe[i][5]-preoe[i-1][5])*(preoe[i][5]-preoe[i-1][5]))^0.5
+				if floor(preoe[i][2]*size)*2<len then
+local figu1,color1
+					if figu=="" then
+figu1=preoe[i][3]
+					else
+figu1=figu
+					end
+					if color==nil then
+color1=preoe[i][1]
+					else
+color1=color
+					end
+save1[#save1+1]={color1,floor(preoe[i][2]*size),figu1,preoe[i][4],preoe[i][5]}
+				else
+len=floor(len/(-mama))
+
+					for j=1,len do
+local figu1,color1
+						if figu=="" then
+figu1=preoe[i][3]
+						else
+figu1=figu
+						end
+						if color==nil then
+color1=preoe[i][1]
+						else
+color1=color
+						end
+save1[#save1+1]={color1,floor(preoe[i][2]*size),figu1,preoe[i][4]*j/len+preoe[i-1][4]*(1-j/len),preoe[i][5]*j/len+preoe[i-1][5]*(1-j/len)}
+					end
+				end
+			end
+		end
+	end
+local fs1={}
+local fs2={}
+local save4={}
+local hpn=math.floor(hp*#save1)
+for i=1,hpn do
+fs1[i]=save1[i]
+end
+for i=hpn+1,#save1 do
+fs2[i-hpn]=save1[i]
+end
+for i=1,#fs2 do
+save4[i]=fs2[i]
+end
+for i=1,#fs1 do
+save4[i+#fs2]=fs1[i]
+end
+
+preoe={}
+for i=1,#save2 do
+preoe[i]=save2[i]
+end
+if rev==0 then
+for i=1,#save4 do
+preoe[#save2+i]=save4[i]
+end
+else
+for i=1,#save4 do
+local ir=#save4+1-i
+preoe[#save2+i]=save4[ir]
+end
+end
+for i=1,#save3 do
+preoe[#save2+#save1+i]=save3[i]
+end
+n=#preoe
+stn=#save2
+fln=#save2+#save1
+if fln<stn then
+stn=fln
+end
+elseif copype==1 then
+local save1={}
+local save2={}
+	for i=1,stn do
+save1[i]=preoe[i]
+	end
+	for i=fln+1,#preoe do
+save2[i-fln]=preoe[i]
+	end
+preoe={}
+	for i=1,#save1 do
+preoe[i]=save1[i]
+	end
+	for i=1,#save2 do
+preoe[i+#save1]=save2[i]
+	end
+n=#preoe
+stn=floor(n*st)
+fln=floor(n*fl)
+	if fln<stn then
+stn=fln
+	end
+elseif copype==2 then
+local save1={}
+local save2={}
+local save3={}
+for i=1,fln do
+save1[i]=preoe[i]
+end
+for i=fln+1,#preoe do
+save2[i-fln]=preoe[i]
+end
+local px=xy[1]
+local py=xy[2]
+	if mama==nil or mama==0 then
+		for i=spn+1,fpn do
+local figu1,color1
+			if figu=="" then
+figu1=preoe[i][3]
+			else
+figu1=figu
+			end
+			if color==nil then
+color1=preoe[i][1]
+			else
+color1=color
+			end
+local r=(preoe[i][4]*preoe[i][4]+preoe[i][5]*preoe[i][5])^0.5
+local deg=atan(preoe[i][5]/preoe[i][4])
+if preoe[i][4]<0 then
+deg=deg+pi
+end
+save3[i-spn]={color1,floor(preoe[i][2]*size),figu1,r*cos(deg+radi)+px,r*sin(deg+radi)+py}
+		end
+	elseif 0<mama then
+		for i=spn+1,fpn do
+			if i%mama==1 then
+local figu1,color1
+				if figu=="" then
+figu1=preoe[i][3]
+				else
+figu1=figu
+				end
+				if color==nil then
+color1=preoe[i][1]
+				else
+color1=color
+				end
+local r=(preoe[i][4]*preoe[i][4]+preoe[i][5]*preoe[i][5])^0.5
+local deg=atan(preoe[i][5]/preoe[i][4])
+if preoe[i][4]<0 then
+deg=deg+pi
+end
+save3[#save3+1]={color1,floor(preoe[i][2]*size),figu1,r*cos(deg+radi)+px,r*sin(deg+radi)+py}
+			end
+		end
+	elseif mama<0 then
+		for i=spn+1,fpn do
+			if i==spn+1 then
+local figu1,color1
+				if figu=="" then
+figu1=preoe[i][3]
+				else
+figu1=figu
+				end
+				if color==nil then
+color1=preoe[i][1]
+				else
+color1=color
+				end
+local r=(preoe[i][4]*preoe[i][4]+preoe[i][5]*preoe[i][5])^0.5
+local deg=atan(preoe[i][5]/preoe[i][4])
+if preoe[i][4]<0 then
+deg=deg+pi
+end
+save3[#save3+1]={color1,floor(preoe[i][2]*size),figu1,r*cos(deg+radi)+px,r*sin(deg+radi)+py}
+			else
+local len=((preoe[i][4]-preoe[i-1][4])*(preoe[i][4]-preoe[i-1][4])+(preoe[i][5]-preoe[i-1][5])*(preoe[i][5]-preoe[i-1][5]))^0.5
+				if floor(preoe[i][2]*size)*2<len then
+local figu1,color1
+					if figu=="" then
+figu1=preoe[i][3]
+					else
+figu1=figu
+					end
+					if color==nil then
+color1=preoe[i][1]
+					else
+color1=color
+					end
+local r=(preoe[i][4]*preoe[i][4]+preoe[i][5]*preoe[i][5])^0.5
+local deg=atan(preoe[i][5]/preoe[i][4])
+if preoe[i][4]<0 then
+deg=deg+pi
+end
+save3[#save3+1]={color1,floor(preoe[i][2]*size),figu1,r*cos(deg+radi)+px,r*sin(deg+radi)+py}
+				else
+len=floor(len/(-mama))
+local figu1,color1
+					if figu=="" then
+figu1=preoe[i][3]
+					else
+figu1=figu
+					end
+					if color==nil then
+color1=preoe[i][1]
+					else
+color1=color
+					end
+					for j=1,len do
+						local x=preoe[i][4]*j/len+preoe[i-1][4]*(1-j/len)
+						local y=preoe[i][5]*j/len+preoe[i-1][5]*(1-j/len)
+local r=(x*x+y*y)^0.5
+local deg=atan(y/x)
+if x<0 then
+deg=deg+pi
+end
+save3[#save3+1]={color1,floor(preoe[i][2]*size),figu1,r*cos(deg+radi)+px,r*sin(deg+radi)+py}
+					end
+				end
+			end
+		end
+	end
+
+local fs1={}
+local fs2={}
+local save4={}
+local hpn=math.floor(hp*#save3)
+for i=1,hpn do
+fs1[i]=save3[i]
+end
+for i=hpn+1,#save3 do
+fs2[i-hpn]=save3[i]
+end
+for i=1,#fs2 do
+save4[i]=fs2[i]
+end
+for i=1,#fs1 do
+save4[i+#fs2]=fs1[i]
+end
+
+preoe={}
+for i=1,#save1 do
+preoe[i]=save1[i]
+end
+if rev==0 then
+for i=1,#save4 do
+preoe[i+#save1]=save4[i]
+end
+else
+for i=1,#save4 do
+local ir=#save4+1-i
+preoe[i+#save1]=save4[ir]
+end
+end
+for i=1,#save2 do
+preoe[i+#save1+#save4]=save2[i]
+end
+n=#preoe
+stn=#save1
+fln=#save1+#save4
+	if fln<stn then
+stn=fln
+	end
+
+
+elseif copype==3 then
+local save1={}
+local save2={}
+local save3={}
+for i=1,fln do
+save1[i]=preoe[i]
+end
+for i=fln+1,#preoe do
+save2[i-fln]=preoe[i]
+end
+local px=xy[1]
+local py=xy[2]
+if mama==nil or mama==0 then
+	for i=spn+1,fpn do
+local figu1,color1
+		if figu=="" then
+figu1=peoe[i][3]
+		else
+figu1=figu
+		end
+		if color==nil then
+color1=peoe[i][1]
+		else
+color1=color
+		end
+local r=(peoe[i][4]*peoe[i][4]+peoe[i][5]*peoe[i][5])^0.5
+local deg=atan(peoe[i][5]/peoe[i][4])
+if peoe[i][4]<0 then
+deg=deg+pi
+end
+save3[i-spn]={color1,floor(peoe[i][2]*size),figu1,r*cos(deg+radi)+px,r*sin(deg+radi)+py}
+	end
+elseif 0<mama  then
+	for i=spn+1,fpn do
+		if i%mama==1 then
+local figu1,color1
+			if figu=="" then
+figu1=peoe[i][3]
+			else
+figu1=figu
+			end
+			if color==nil then
+color1=peoe[i][1]
+			else
+color1=color
+			end
+local r=(peoe[i][4]*peoe[i][4]+peoe[i][5]*peoe[i][5])^0.5
+local deg=atan(peoe[i][5]/peoe[i][4])
+if peoe[i][4]<0 then
+deg=deg+pi
+end
+save3[#save3+1]={color1,floor(peoe[i][2]*size),figu1,r*cos(deg+radi)+px,r*sin(deg+radi)+py}
+		end
+	end
+elseif mama<0 then
+	for i=spn+1,fpn do
+		if i==spn+1 then
+local figu1,color1
+			if figu=="" then
+figu1=peoe[i][3]
+			else
+figu1=figu
+			end
+			if color==nil then
+color1=peoe[i][1]
+			else
+color1=color
+			end
+local r=(peoe[i][4]*peoe[i][4]+peoe[i][5]*peoe[i][5])^0.5
+local deg=atan(peoe[i][5]/peoe[i][4])
+if peoe[i][4]<0 then
+deg=deg+pi
+end
+save3[#save3+1]={color1,floor(peoe[i][2]*size),figu1,r*cos(deg+radi)+px,r*sin(deg+radi)+py}
+		else
+local len=((peoe[i][4]-peoe[i-1][4])*(peoe[i][4]-peoe[i-1][4])+(peoe[i][5]-peoe[i-1][5])*(peoe[i][5]-peoe[i-1][5]))^0.5
+			if floor(peoe[i][2]*size)*2<len then
+local figu1,color1
+			if figu=="" then
+figu1=peoe[i][3]
+			else
+figu1=figu
+			end
+			if color==nil then
+color1=peoe[i][1]
+			else
+color1=color
+			end
+local r=(peoe[i][4]*peoe[i][4]+peoe[i][5]*peoe[i][5])^0.5
+local deg=atan(peoe[i][5]/peoe[i][4])
+if peoe[i][4]<0 then
+deg=deg+pi
+end
+save3[#save3+1]={color1,floor(peoe[i][2]*size),figu1,r*cos(deg+radi)+px,r*sin(deg+radi)+py}
+			else
+len=floor(len/(-mama))
+local figu1,color1
+			if figu=="" then
+figu1=peoe[i][3]
+			else
+figu1=figu
+			end
+			if color==nil then
+color1=peoe[i][1]
+			else
+color1=color
+			end
+				for j=1,len do
+local x=peoe[i][4]*j/len+peoe[i-1][4]*(1-j/len)
+local y=peoe[i][5]*j/len+peoe[i-1][5]*(1-j/len)
+local r=(x*x+y*y)^0.5
+local deg=atan(y/x)
+if x<0 then
+deg=deg+pi
+end
+save3[#save3+1]={color1,floor(peoe[i][2]*size),figu1,r*cos(deg+radi)+px,r*sin(deg+radi)+py}
+				end
+			end
+		end
+	end
+end
+local fs1={}
+local fs2={}
+local save4={}
+local hpn=math.floor(hp*#save3)
+for i=1,hpn do
+fs1[i]=save3[i]
+end
+for i=hpn+1,#save3 do
+fs2[i-hpn]=save3[i]
+end
+for i=1,#fs2 do
+save4[i]=fs2[i]
+end
+for i=1,#fs1 do
+save4[i+#fs2]=fs1[i]
+end
+
+preoe={}
+for i=1,#save1 do
+preoe[i]=save1[i]
+end
+if rev==0 then
+for i=1,#save4 do
+preoe[i+#save1]=save4[i]
+end
+else
+for i=1,#save4 do
+local ir=#save4+1-i
+preoe[i+#save1]=save4[ir]
+end
+end
+for i=1,#save2 do
+preoe[i+#save1+#save4]=save2[i]
+end
+n=#preoe
+stn=#save1
+fln=#save1+#save4
+	if fln<stn then
+stn=fln
+	end
+end
+
+
+local path2
+if anfile=="" then
+path2=obj.getinfo("script_path")..file.."-copy.txt"
+else
+path2=obj.getinfo("script_path")..anfile..".txt"
+end
+local t=io.open(path2,"w")
+t:write("OEKAKI={\n")
+	if obj.check0 then
+		for i=stn+1,fln do
+			if i~=fln then
+t:write("{"..preoe[i][1]..","..preoe[i][2]..","..[["]]..preoe[i][3]..[["]]..","..preoe[i][4]..","..preoe[i][5].."},\n")
+			else
+t:write("{"..preoe[i][1]..","..preoe[i][2]..","..[["]]..preoe[i][3]..[["]]..","..preoe[i][4]..","..preoe[i][5].."}\n")
+			end
+		end
+	else
+		for i=1,#preoe do
+			if i~=#preoe then
+t:write("{"..preoe[i][1]..","..preoe[i][2]..","..[["]]..preoe[i][3]..[["]]..","..preoe[i][4]..","..preoe[i][5].."},\n")
+			else
+t:write("{"..preoe[i][1]..","..preoe[i][2]..","..[["]]..preoe[i][3]..[["]]..","..preoe[i][4]..","..preoe[i][5].."}\n")
+			end
+		end
+	end
+t:write("}")
+t:close()
+savef=true
+end
+
+
+
+
+
+@ExtractEdge
+--track0:Size,4,100,10,1
+--track1:Progress,0,100,100,0.01
+--track2:Strength,0,1000,100
+--track3:Threshold,-100,100,0
+--check0:Save,0
+--dialog:Filename,local file="oekaki-edge";Save/chk,local save=0;Shape/fig,local figu="Circle";Color/col,local c=0x0000ff;Zoom,local zoom=100;AutoColor/chk,local atc=0;StartPt,local stp=0;Threshold2,local siki2=128;
+require("oekakifunc")
+local option=obj.setoption
+local draw=obj.draw
+local load=obj.load
+local gpd=obj.getpixeldata
+local chase=oekakifunc.chase
+local copy=obj.copybuffer
+local s=obj.track0+obj.track0%2
+if figu=="" then
+figu="Circle"
+end
+if c==nil then
+c=0xff
+end
+if stp==nil then
+stp=0
+end
+if stp<0 then
+stp=0
+elseif 100<stp then
+stp=100
+end
+if siki2==nil then
+siki2=128
+end
+if siki2<0 then
+siki=0
+elseif 255<siki2 then
+siki=255
+end
+if atc==1 then
+obj.copybuffer("cache:oe","obj")
+end
+local aline={}
+obj.effect("Resize","Zoom%",zoom)
+obj.effect("Edge extraction","Strength",obj.track2,"Threshold",obj.track3)
+obj.effect("Region expansion","Top",1,"Bottom",1,"Right",1,"Left",1)
+local ww,hh=obj.getpixel()
+for i=0,hh do
+for j=0,ww do
+local col,al=obj.getpixel(j,i,"col")
+if siki2/255<al then
+al=1
+else
+al=0
+end
+obj.putpixel(j,i,col,al)
+end
+end
+local j=1
+while(0) do
+option("dst","tmp",ww,hh)
+local data,w,h=gpd()
+aline[j]=chase(data,w,h,s)
+if aline[j]==nil then
+break
+end
+draw()
+load("figure","Square",0xff,s+2)
+option("blend","alpha_sub")
+option("antialias",0)
+for i=1,#aline[j]*0.5 do
+local i1=i*2
+obj.draw(aline[j][i1-1],aline[j][i1],0,1,8)
+end
+option("blend",0)
+option("antialias",1)
+copy("obj","tmp")
+j=j+1
+end
+option("dst","frm")
+local bline={}
+for i=1,#aline[1] do
+bline[#bline+1]=aline[1][i]
+end
+local cline={}
+for i=2,#aline do
+cline[i-1]=i
+end
+for i=2,#aline do
+local len={}
+for j=1,#cline do
+local jj=j*2
+local n=cline[j]
+local bx=bline[#bline-1]
+local by=bline[#bline]
+local ax=aline[n][1]
+local ay=aline[n][2]
+len[jj-1]=((bx-ax)*(bx-ax)+(by-ay)*(by-ay))^0.5
+ax=aline[n][#aline[n]-1]
+ay=aline[n][#aline[n]]
+len[jj]=((bx-ax)*(bx-ax)+(by-ay)*(by-ay))^0.5
+end
+local num=2
+local mlen=len[2]
+for j=1,#cline do
+local jj=j*2
+if len[jj-1]<mlen then
+mlen=len[jj-1]
+num=jj-1
+end
+if len[jj]<mlen then
+mlen=len[jj]
+num=jj
+end
+end
+if num%2==1 then
+num=(num+1)*0.5
+local n=cline[num]
+for j=1,#aline[n] do
+bline[#bline+1]=aline[n][j]
+end
+else
+num=num*0.5
+local n=cline[num]
+for j=1,#aline[n]*0.5 do
+local m=#aline[n]*0.5+1-j
+bline[#bline+1]=aline[n][m*2-1]
+bline[#bline+1]=aline[n][m*2]
+end
+end
+table.remove(cline,num)
+end
+
+if stp~=0 then
+local bb={}
+local n1=math.floor(#bline*stp*0.01)
+n1=n1+n1%2
+local n2=#bline-n1
+for i=1,n2 do
+bb[i]=bline[i+n1]
+end
+for i=1,n1 do
+bb[i+n2]=bline[i]
+end
+bline={}
+for i=1,n1+n2 do
+bline[i]=bb[i]
+end
+end
+local colort={}
+if atc==1 then
+obj.copybuffer("obj","cache:oe")
+obj.effect("Region expansion","Top",1,"Bottom",1,"Right",1,"Left",1)
+for i=1,#bline*0.5 do
+local rgb=obj.getpixel(bline[i*2-1]+ww*0.5,bline[i*2]+hh*0.5,"col")
+colort[i]=rgb
+end
+else
+for i=1,#bline*0.5 do
+colort[i]=c
+end
+end
+if math.floor(#bline*0.5*obj.track1*0.01)==0 then
+obj.alpha=0
+else
+if atc==0 then
+load("figure",figu,c,s)
+for i=1,math.floor(#bline*0.5*obj.track1*0.01) do
+local i1=i*2
+draw(bline[i1-1],bline[i1])
+end
+else
+for i=1,math.floor(#bline*0.5*obj.track1*0.01) do
+load("figure",figu,colort[i],s)
+local i1=i*2
+draw(bline[i1-1],bline[i1])
+end
+end
+end
+if save==1 or obj.check0 then
+if file=="" then
+obj.setfont("",50,4)
+load("Please enter filename")
+draw()
+else
+local path=obj.getinfo("script_path")..file..".txt"
+t=io.open(path,"w")
+t:write("OEKAKI={\n")
+local n=#bline*0.5
+local size=obj.track0
+for i=1,n do
+if i~=n then
+t:write("{"..colort[i]..","..size..","..[["]]..figu..[["]]..","..bline[i*2-1]..","..bline[i*2].."},\n")
+else
+t:write("{"..colort[i]..","..size..","..[["]]..figu..[["]]..","..bline[i*2-1]..","..bline[i*2].."}\n")
+end
+end
+t:write("}")
+t:close()
+end
+end
